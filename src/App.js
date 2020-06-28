@@ -1,83 +1,114 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import {
+    HashRouter as Router,
+    Link as RouterLink,
+    Route,
+    Switch
+} from "react-router-dom";
 
-// My Custom Components
-import Game from './components/Game'
 
 
-// MUI compound components
-import Tabs from './components/Tabs'
+// My Components & Pages
+import Navbar from './components/Navbar';
+import WelcomePage from "./pages/WelcomePage";
+import ClassicGame from './pages/ClassicGame';
+import MultiplicationGame from './pages/MultiplicationGame';
 
-// MUI basic components
-import AppBar from '@material-ui/core/AppBar'
+// MUI  components
+import CssBaseline from '@material-ui/core/CssBaseline';
+import Container from '@material-ui/core/Container';
+import Box from '@material-ui/core/Box';
+// import Button from '@material-ui/core/Button';
+// import Menu from '@material-ui/core/Menu';
+// import MenuItem from '@material-ui/core/MenuItem';
+// import MenuIcon from '@material-ui/icons/Menu';
+// import AppBar from '@material-ui/core/AppBar'
 import Typography from '@material-ui/core/Typography'
 
+import './App.css';
+import theme from "./theme";
+import {
+    makeStyles,
+    ThemeProvider
+} from '@material-ui/core/styles';
 
 
 
-import { makeStyles } from '@material-ui/core/styles';
-const useStyles = makeStyles({
+
+
+const useStyles = makeStyles((theme) => ({
     root: {
-        height: '100vh',
+        height: 'auto',
+        minHeight: '100vh',
         width: '100vw',
-        boxSizing: 'border-box',
-        backgroundColor: '#BBFFFF',
+        minWidth: '800px',
+        
+        // backgroundColor: theme.palette.common.white,
+        // backgroundColor: theme.palette.primary.light,
+        backgroundColor: '#b3e5fc',
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'center'
-    },
-    container: {
-        border: 'solid red 1px',
-        height: '90vmin',
-        width: '75vmin',
-    },
-    titleArea: {
-        display: 'flex',
-    },
-    title: {
-        fontSize: 'min(max(1.6rem, 6vw), 2.4rem)',
-    },
-    stemGardenLink: {
+        alignItems: 'top',
 
     },
-    tabArea: {
-        width: 'inherit'
-    },
-    boardArea: {
-        backgroundColor: 'blue',
-        width: '100%',
-        height: '100%'
-    }
-})
+
+
+}));
 
 
 export default function App() {
     const classes = useStyles();
-  
+    // const [pageTitle, setPageTitle] = React.useState("Welcome");
+
+    const [pageTitle, setPageTitle] = React.useState("Welcome");
+
+    // Similar to componentDidMount and componentDidUpdate:
+    React.useEffect(() => {
+        // Update the document title using the browser API
+        // document.title = `You clicked ${count} times`;
+
+    });
+
     return (
-        <div className={classes.root} >
-            <div className={classes.container} >
-                {/* <AppBar position="static">
-                    <Typography className={classes.title} variant="h6" noWrap >
-                        Connect Four
-                    </Typography>
-                </AppBar> */}
-                <Tabs className={classes.tabArea} />
-            </div>
-            
-            
-            
-            {/* <div className={classes.titleArea}>
-                <span className={classes.title}>
-                    Play Connect Four
-                    </span>
-                <span className={classes.stemGardenLink}>
-                    by the Nola Stem Garden
-                    </span>
-            </div> */}
-            
-        {/* <Game /> */}
-        </div>
+        <React.Fragment>
+            <CssBaseline />
+            <ThemeProvider theme={theme}>
+                <Box className={classes.root}>
+                    <Router>
+                        <Switch>
+                            <Route exact path="/">
+                                <WelcomePage />
+                            </Route>
+
+                            <Route path="/classic_mode">
+                                <ClassicGame />
+                            </Route>
+
+                            <Route path="/multiplication_mode">
+                                <Navbar pageTitle={"Multiplication Fact Connect Four"} />
+                                <MultiplicationGame />
+                            </Route>
+
+                        </Switch>
+                    </Router>
+                    {/* <Footer /> */}
+                </Box>
+            </ThemeProvider>
+        </React.Fragment>
+        
+        
+        
+    );
+}
+
+function Footer() {
+    const classes = useStyles();
+
+    return (
+        <Box className={classes.footer} >
+            <Typography className={classes.footerText} noWrap >
+                Produced by the Nola Stem Garden
+            </Typography>
+        </Box>
     );
 }
