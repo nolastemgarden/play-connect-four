@@ -146,13 +146,14 @@ function  Column(props) {
         let square = 
             <Square 
                 id={row}
-                status={squaresStatus[row]} /
-            >
+                status={squaresStatus[row]} 
+                
+            />
         
         column = column.concat(square)
     }
 
-    console.log(`column = ${column}`)
+    
     
     return (
         <Box
