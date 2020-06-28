@@ -3,5 +3,23 @@ element {
     --theme-bg-color: #BBFFFF;
 }
 
+.circle {
+    background-color: black;
+    width: 85%;
+    height: 85%;
+    border-radius: 50%;
 
+}
+
+.empty {
+    background-color: white;
+}
+
+.player1 {
+    background-color: red;
+}
+
+.player2 {
+    background-color: yellow;
+}
 
