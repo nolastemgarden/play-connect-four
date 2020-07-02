@@ -21,8 +21,6 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 // Custom Styling
 import { makeStyles } from '@material-ui/core/styles';
-import { Grid } from '@material-ui/core';
-
 const useStyles = makeStyles((theme) => ({
     root: {
         // border: 'solid red 1px',
