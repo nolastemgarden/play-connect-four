@@ -12,8 +12,6 @@ import Box from '@material-ui/core/Box';
 
 // Custom Styling
 import { makeStyles } from '@material-ui/core/styles';
-import { Grid } from '@material-ui/core';
-
 const useStyles = makeStyles((theme) => ({
     square: {
         width: '100px',
@@ -28,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Square(props) {
     const classes = useStyles();
-    const status = props.status;
+    const status = props.squareStatus;
 
     // console.log("Square passes status to Circle: " + props.status);    // Status may be 'red' 'yellow' or 'open'
     return (
