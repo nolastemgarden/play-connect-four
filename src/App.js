@@ -41,7 +41,7 @@ const useStyles = makeStyles((theme) => ({
         height: 'auto',
         minHeight: '100vh',
         width: '100vw',
-        minWidth: '800px',
+        minWidth: '400px',
         
         // backgroundColor: theme.palette.common.white,
         // backgroundColor: theme.palette.primary.light,
