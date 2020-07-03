@@ -45,31 +45,77 @@ const useStyles = makeStyles((theme) => ({
 export default function ClassicGame() {
     const classes = useStyles();
 
-    // Game Constants
-    const squaresPerCol = 6;
-    const squaresPerRow = 7;
-    const totalSquares = squaresPerCol * squaresPerRow;
-
     // The ONLY mutable state in the Game is a list of the square id's that have been claimed in the order they were claimed.  From this we can deduce the turn number, which player made which moves, and win/draw status.
     let [history, setHistory] = useState(Array(0)); // console.log("History initialized to: " + history);
     // let [history, setHistory] = useState([2,3,4,5,1,7,6,11,33]);  // FOR DEV AND TESTING PURPOSES ONLY
     
     const boardStatus = getBoardStatus();
 
-    // A "Line" defined here to mean a set of four squareIds that together constitute a win. There is a fived set of lineIds. 
+    // A "Line" defined here to mean a set of four squareIds that together constitute a win. There is a fixed set of lineIds. 
     // Each Line has a unique id that serves as a KEY mapped to a VALUE that represents the number of claimed squares in that line (sort of)
     // The VALUE is a two-number tuple where the first number is the number of that line's squares claimed by playerOne and the second number is the number of squares claimed by playerTwo.
     
     // The linesList is an array where each element is a tuple of 4 squareIds that together constitute a win
     // const linesList = allLinesList(squaresPerCol, squaresPerRow);
 
+    // Game Constants
+    const squaresPerCol = 6;
+    const squaresPerRow = 7;
+    function totalSquares() {
+        return squaresPerCol * squaresPerRow;
+    }
+
+
+    const squareMap = getSquareMap();  // squareMap enables quick 
+    function getSquareMap() {
+        let map = new Map();
+        for (let squareId = 0; squareId < totalSquares(); squareId++) {
+            let ids = {
+                'squareId': squareId,
+                'col': getColBySquareId(squareId),
+                'row': getRowBySquareId(squareId),
+                'upslash': getUpslashBySquareId(squareId),
+                'downslash': getDownslashBySquareId(squareId),
+            }
+            map.set(squareId, ids);
+        }
+        
+        return map;
+    }
+
+    const lineMap = getLineMap();  // Maps each lineId to the set of squares in it.
+    function getLineMap() {
+        let map = new Map();
+        
+        map.set('vertical', Array(numberOfVerticalLines()))
+        
+        
+        return map;
+    }
+
+
+
+    function linesPerCol() {
+        const c = squaresPerCol;
+        const linesPerCol = (c - 4 >= 0) ? (c - 3) : 0;
+        return linesPerCol;
+    }
+    function linesPerRow() {
+        const r = squaresPerRow;
+        const linesPerRow = (r - 4 >= 0) ? (r - 3) : 0;
+        return linesPerRow;
+    }
+    function linesInSlash(slashId) {
+        // const linesPerRow = (r - 4 >= 0) ? (r - 3) : 0;
+        // return linesPerRow;
+    }
+    
     function totalNumberOfLines(c = squaresPerCol, r = squaresPerRow) {
         const totalNumberOfLines = (numberOfVerticalLines(c, r) + numberOfHorizontalLines(c, r) + numberOfUpslashLines(c, r) + numberOfDownslashLines(c, r));
         return totalNumberOfLines;
     }
     function numberOfVerticalLines(c = squaresPerCol, r = squaresPerRow) {
-        const linesPerCol = (c - 4 >= 0) ? (c - 3) : 0;
-        const numberOfVerticalLines = linesPerCol * r; 
+        const numberOfVerticalLines = linesPerCol() * r; 
         return numberOfVerticalLines;
     }
     function numberOfHorizontalLines(c = squaresPerCol, r = squaresPerRow) {
@@ -78,52 +124,13 @@ export default function ClassicGame() {
         return numberOfHorizontalLines;
     }
     function numberOfUpslashLines(c = squaresPerCol, r = squaresPerRow) {
-        const linesPerCol = (c - 4 >= 0) ? (c - 3) : 0;  // The number of winning Lines in a column cannot be negative.
-        const linesPerRow = (r - 4 >= 0) ? (r - 3) : 0;
-        const numberOfUpslashLines = (linesPerCol * linesPerRow);
-        return numberOfUpslashLines;
+        return numberOfUpslashLines = (linesPerCol() * linesPerRow());
     }
     function numberOfDownslashLines(c = squaresPerCol, r = squaresPerRow) {  // Redundant: equal to numberOfUpslashLines
-        const linesPerCol = (c - 4 >= 0) ? (c - 3) : 0;  // The number of winning Lines in a column cannot be negative.
-        const linesPerRow = (r - 4 >= 0) ? (r - 3) : 0;
-        const numberOfDownslashLines = (linesPerCol * linesPerRow);
-        return numberOfDownslashLines;
+        return numberOfDownslashLines = (linesPerCol() * linesPerRow());
     }
 
-    function allLinesList(c = squaresPerCol, r = squaresPerRow) {
-        const linesList = verticalLinesList().concat(horizontalLinesList()).concat(upslashLinesList()).concat(downslashLinesList())
-        return linesList;
-    }
-    function verticalLinesList() {
-        const squaresWhereVerticalLinesStart = allSquareIds().filter(squareId => isStartOfVerticalLine(squareId));
-        const verticalLinesList = squaresWhereVerticalLinesStart.map(squareId => [squareId, squareId + 1, squareId + 2, squareId + 3]);
-        console.log(`List of Vertical Lines: ${verticalLinesList}`);
-        return verticalLinesList;
-    }
-    function horizontalLinesList() {
-        const c = squaresPerCol;
-        const squaresWhereHorizontalLinesStart = allSquareIds().filter(squareId => isStartOfHorizontalLine(squareId));
-        // console.log(`List of Squares where Horizontal Lines start: ${squaresWhereHorizontalLinesStart}`);
-        const horizontalLinesList = squaresWhereHorizontalLinesStart.map(squareId => [squareId, squareId + 1*c, squareId + 2*c, squareId + 3*c]);
-        console.log(`List of Horizontal Lines: ${horizontalLinesList}`);
-        return horizontalLinesList;
-    }
-    function upslashLinesList() {
-        const c = squaresPerCol;
-        const squaresWhereUpslashLinesStart = allSquareIds().filter(squareId => isStartOfUpslashLine(squareId));
-        // console.log(`List of Squares where Upslash Lines start: ${squaresWhereUpslashLinesStart}`);
-        const upslashLinesList = squaresWhereUpslashLinesStart.map(squareId => [squareId, squareId + 1 + c, squareId + 2 + 2 * c, squareId + 3 + 3 * c]);
-        // console.log(`List of Horizontal Lines: ${horizontalLinesList}`);
-        return upslashLinesList;
-    }
-    function downslashLinesList() {
-        const c = squaresPerCol;
-        const squaresWhereDownslashLinesStart = allSquareIds().filter(squareId => isStartOfDownslashLine(squareId));
-        // console.log(`List of Squares where Downslash Lines start: ${squaresWhereDownslashLinesStart}`);
-        const downslashLinesList = squaresWhereDownslashLinesStart.map(squareId => [squareId, squareId - 1 + c, squareId - 2 + 2 * c, squareId - 3 + 3 * c]);
-        // console.log(`List of Downslash Lines: ${downslashLinesList}`);
-        return downslashLinesList;
-    }
+    
 
 
     // BOOLEAN helpers  
@@ -158,7 +165,9 @@ export default function ClassicGame() {
         return (isEndOfVerticalLine(squareId) && isStartOfHorizontalLine(squareId));
     }
 
-    // Low-level SQUARE, ROW, COL helpers
+    // Low-level SQUARE helpers.  rowNumbers, colNumbers, upslashNumbers, and downslashNumbers are all 0-indexed
+    // Each SQUARE belongs to exactly one row, one col, one upslash and one downslash.
+    // Each SQUARE belongs to varying numbers of Lines.
     function getSquareIdByRowCol(row, col) {
         return (col * squaresPerCol + row);
     }
@@ -168,6 +177,17 @@ export default function ClassicGame() {
     function getColBySquareId(id) {
         return (Math.floor(id / squaresPerCol))
     }
+    function getUpslashBySquareId(id) {
+        const row = getRowBySquareId(id);
+        const col = getColBySquareId(id);
+        return (squaresPerCol - row + col - 1)
+    }
+    function getDownslashBySquareId(id) {
+        const row = getRowBySquareId(id);
+        const col = getColBySquareId(id);
+        return (row + col)
+    }
+
     function allSquareIds(c = squaresPerCol, r = squaresPerRow) { // List of all squareIds to use with Array.filter()
         const totalSquares = c * r;
         let squareIdsList = Array(totalSquares).fill().map((_, i) => i);
@@ -245,10 +265,7 @@ export default function ClassicGame() {
     }
     function playerOneWins(moveList = history) {
         const playerOnesMoveList = moveList.filter((squareId, turnNumber) => turnNumber % 2 === 0);
-        const squaresClaimedInEachLine = Array(totalNumberOfLines()).fill({
-            'playerOne': 0,
-            'playerTwo': 0
-        });
+        
         playerOnesMoveList.forEach(squareId => {
             
             
@@ -267,20 +284,143 @@ export default function ClassicGame() {
     }
     
     function getMoveCountsInEachLine(moveList = history) {
-        const playerOnesMoveList = moveList.filter((squareId, turnNumber) => turnNumber % 2 === 0);
-        const playerTwosMoveList = moveList.filter((squareId, turnNumber) => turnNumber % 2 === 1);
         
-        const squaresClaimedInEachLine = Array(totalNumberOfLines().fill(0));
+        const moveCountsInEachLine = Array(totalNumberOfLines()).fill({
+            'playerOne': 0,
+            'playerTwo': 0
+        });
+
+        console.log(`Total number of Lines: ${totalNumberOfLines()} `)
+        // console.log(`MoveCountsInEachLine:  `)
+        // console.log(`player1: ${moveCountsInEachLine[0].playerOne}`)
+        // console.log(`palyer2: ${moveCountsInEachLine[0].playerTwo}`)
+
+        moveList.forEach((squareId, turnNumber) => {
+            const linesToUpdate = linesThatIncludeSquare(squareId);
+            console.log(`Number of Lines to update: ${linesToUpdate.length} `)
+            // if (turnNumber % 2 === 0){
+            //     linesToUpdate.forEach(lineId => {
+            //         const prev = squaresClaimedInEachLine[lineId].playerOne;
+            //         const increased = (prev+=1);
+            //         squaresClaimedInEachLine[lineId].playerOne = increased;
+            //     });
+            // }
+            // else if (turnNumber % 2 === 1) {
+            //     linesToUpdate.forEach(lineId => {
+            //         const prev = squaresClaimedInEachLine[lineId].playerTwo;
+            //         const increased = (prev += 1);
+            //         squaresClaimedInEachLine[lineId].playerTwo = increased;
+            //     });
+            // }
+        });
+
     }
+    
+    
     function linesThatIncludeSquare(squareId){
-        verticalLinesList().forEach((squareIds, lineId) => console.log(`Squares in line ${lineId}: ${squareIds}`))
+        // Rather than trying to reinvent a way to get all the line Ids a square is in by getting all lines contents and filtering out those which do not include the square in question...
+        // I will use low-level helpers and this observation
+        let linesThatIncludeSquare = [];
+
+        const colNumber = getColBySquareId(squareId);
+        const rowNumber = getRowBySquareId(squareId);
+        const upslashNumber = getUpslashBySquareId(squareId);
+        const downslashNumber = getDownslashBySquareId(squareId);
+        
+        linesThatIncludeSquare = [
+            getVerticalLinesThatIncludeSquare(squareId),
+            getHorizontalLinesThatIncludeSquare(squareId)
+        ]
+        
+        
+        
+        
+        console.log(`Square ${squareId} is a part of Lines: ${linesThatIncludeSquare}`)
+
+        return linesThatIncludeSquare;
     }
-    function verticalLinesThatIncludeSquare(squareId) {
+    
+    
+    
+    // LINES are numbered according to the following scheme:
+    // vert lines in 
+    function getVerticalLinesThatIncludeSquare(squareId) {
+        // Vertical lines are numbered starting from 0.
+        let listOfLineNumbers = [];
+        const colNumber = getColBySquareId(squareId);
+        const firstLineNumber = colNumber * linesPerCol()
+
+        for (let i = 0; i < numberOfVerticalLinesSquareIsIn(squareId); i++){
+            let currentLineNumber = firstLineNumber + i;
+            listOfLineNumbers = listOfLineNumbers.concat(currentLineNumber);
+        }
+        return listOfLineNumbers;
+    }
+    function getHorizontalLinesThatIncludeSquare(squareId) {
+        // Horizontal lines are numbered starting from numberOfVerticalLines().
+        let listOfLineNumbers = [];
+        const rowNumber = getRowBySquareId(squareId);
+        const firstLineNumber = numberOfVerticalLines() + rowNumber * linesPerRow()
+
+        for (let i = 0; i < numberOfHorizontalLinesSquareIsIn(squareId); i++) {
+            let currentLineNumber = firstLineNumber + i;
+            listOfLineNumbers = listOfLineNumbers.concat(currentLineNumber);
+        }
+        return listOfLineNumbers;
+    }
+    function getUpslashLinesThatIncludeSquare(squareId) {
+        // Upslash lines are numbered starting from numberOfVerticalLines() + numberOfHorizontalLines().
+        let listOfLineNumbers = [];
+        let slashNumber = getUpslashBySquareId(squareId);
+        let squaresInSlash = squaresInSlash(slashNumber)
+        
+        // const firstLineNumber = numberOfVerticalLines() + numberOfHorizontalLines() + slashNumber * linesPerUpslash()
+
+        // for (let i = 0; i < numberOfUpslashLinesSquareIsIn(squareId); i++) {
+        //     let currentLineNumber = firstLineNumber + i;
+        //     listOfLineNumbers = listOfLineNumbers.concat(currentLineNumber);
+        // }
+        return listOfLineNumbers;
+    }
+    function getDownslashLinesThatIncludeSquare(squareId) {
 
     }
-    function verticalLinesThatIncludeSquare(squareId) {
 
+    function numberOfVerticalLinesSquareIsIn(squareId) {
+        // Every square is in at least one and at most four VerticalLines
+        let row = getRowBySquareId(squareId)
+        let distanceFromTop = squaresPerCol - row   // Min value = 1
+        let distanceFromBottom = row + 1            // Min value = 1
+        let min = (distanceFromTop < distanceFromBottom) ? distanceFromTop : distanceFromBottom
+        return (min > 4) ? 4 : min;
     }
+    function numberOfHorizontalLinesSquareIsIn(squareId) {
+        // Every square is in at least one and at most four HorizontalLines
+        let col = getColBySquareId(squareId)
+        let distanceFromLeft = squaresPerRow - col      // Min value = 1
+        let distanceFromRight = col + 1                 // Min value = 1
+        let min = (distanceFromLeft < distanceFromRight) ? distanceFromLeft : distanceFromRight
+        let numberOfHorizontalLinesSquareIsIn = (min > 4) ? 4 : min
+        console.log(`numberOfHorizontalLinesSquareIsIn: ${numberOfHorizontalLinesSquareIsIn}`);
+        return numberOfHorizontalLinesSquareIsIn;
+    }
+    function numberOfUpslashLinesSquareIsIn(squareId) {
+        // Each square may be in zero upto four UpslashLines
+        let col = getColBySquareId(squareId)
+        
+        
+        let upslash = getUpslashBySquareId(squareId)
+
+        // let squaresInSlash = 
+
+        let distanceFromLeft = squaresPerRow - col      // Min value = 1
+        let distanceFromRight = col + 1                 // Min value = 1
+        let min = (distanceFromLeft < distanceFromRight) ? distanceFromLeft : distanceFromRight
+        let numberOfHorizontalLinesSquareIsIn = (min > 4) ? 4 : min
+        console.log(`numberOfHorizontalLinesSquareIsIn: ${numberOfHorizontalLinesSquareIsIn}`);
+        return numberOfHorizontalLinesSquareIsIn;
+    }
+
 
 
     
@@ -289,6 +429,9 @@ export default function ClassicGame() {
     function handleColumnClick(colNumber) {
         const moveList = history.slice();
         console.log(`Handling Click for Column: ${colNumber} using history: ${moveList}`)
+        
+        getMoveCountsInEachLine();
+        
         if (lowestEmptySquareInColumn(colNumber) === -1  || gameIsAlreadyOver()){
             console.log(`Clicked column is already full!`)
             return -1;
@@ -300,24 +443,6 @@ export default function ClassicGame() {
             return 0;
         }
     }
-
-
-
-
-
-
-    function validateId(id) {
-        const totalSquares = squaresPerCol * squaresPerRow;
-        if (id >= 0 && id < totalSquares) {
-            return;
-        }
-        else {
-            throw ("Error: Invalid Square Id Passed!")
-        }
-    }
-
-    
-    
     function handleUndoButtonClick() {
         const shortenedHistory = history.slice(0, history.length - 1)
         console.log(`handleUndoButtonClick() removed ${history[history.length - 1]} . New Shortened history: ${shortenedHistory}`);
