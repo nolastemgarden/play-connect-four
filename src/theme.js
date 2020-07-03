@@ -1,9 +1,5 @@
-import React from 'react';
-
-
 import {
     createMuiTheme,
-    makeStyles,
     responsiveFontSizes,
 } from '@material-ui/core/styles';
 
