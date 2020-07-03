@@ -7,14 +7,17 @@ import React from 'react';
 
 // MUI  components
 import Box from '@material-ui/core/Box';
+import Button from '@material-ui/core/Button';
+import ReplayIcon from '@material-ui/icons/Replay';
+import UndoIcon from '@material-ui/icons/Undo';
 
 // Custom Styling
 import { makeStyles } from '@material-ui/core/styles';
 const useStyles = makeStyles((theme) => ({
     panel: {
         border: 'solid red 1px',
-        width: '800px',
-        height: '200px',
+        width: '90%',
+        height: '150px',
         display: 'flex',
         justifyContent: 'center',
     },
@@ -30,6 +33,34 @@ export default function Panel(props) {
 
 
     let status = props.gameStatus;
+
+
+    const undoButton = (
+        <Button
+            variant="contained"
+            color="primary"
+            className={classes.button}
+            onClick={() => props.handleUndoButtonClick()}
+
+        >
+        <UndoIcon className={classes.buttonIcon} />
+            Undo
+        </Button>
+
+
+    );
+
+    const newGameButton = (
+        <Button
+            variant="contained"
+            color="primary"
+            className={classes.button}
+            onClick={() => props.handleNewGameButtonClick()}
+        >
+            <ReplayIcon className={classes.buttonIcon} />
+            New&nbsp;Game
+        </Button>
+    );
     
     // let circle;
     // let text;
@@ -59,6 +90,8 @@ export default function Panel(props) {
             </span>
             <h1>{text}</h1> */}
             {status}
+            {undoButton}
+            {newGameButton}
         </Box>
     
 

@@ -23,11 +23,11 @@ const useStyles = makeStyles((theme) => ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        justifyContent: 'center'
         // backgroundColor: '#4AC9FD',
         // overflow: 'scroll',
     },
     paper: {
-        justifySelf: 'center',
         width: '100%',
         height: 'auto',
         // backgroundColor: theme.palette.primary.light,
@@ -61,7 +61,7 @@ export default function ClassicGame() {
     // The VALUE is a two-number tuple where the first number is the number of that line's squares claimed by playerOne and the second number is the number of squares claimed by playerTwo.
     
     // The linesList is an array where each element is a tuple of 4 squareIds that together constitute a win
-    // const linesList = listAllLines(squaresPerCol, squaresPerRow);
+    // const linesList = allLinesList(squaresPerCol, squaresPerRow);
 
     function totalNumberOfLines(c = squaresPerCol, r = squaresPerRow) {
         const totalNumberOfLines = (numberOfVerticalLines(c, r) + numberOfHorizontalLines(c, r) + numberOfUpslashLines(c, r) + numberOfDownslashLines(c, r));
@@ -90,7 +90,7 @@ export default function ClassicGame() {
         return numberOfDownslashLines;
     }
 
-    function listAllLines(c = squaresPerCol, r = squaresPerRow) {
+    function allLinesList(c = squaresPerCol, r = squaresPerRow) {
         const linesList = verticalLinesList().concat(horizontalLinesList()).concat(upslashLinesList()).concat(downslashLinesList())
         return linesList;
     }
@@ -124,7 +124,6 @@ export default function ClassicGame() {
         // console.log(`List of Downslash Lines: ${downslashLinesList}`);
         return downslashLinesList;
     }
-
 
 
     // BOOLEAN helpers  
@@ -246,7 +245,10 @@ export default function ClassicGame() {
     }
     function playerOneWins(moveList = history) {
         const playerOnesMoveList = moveList.filter((squareId, turnNumber) => turnNumber % 2 === 0);
-        const squaresClaimedInEachLine = Array(totalNumberOfLines().fill(0));
+        const squaresClaimedInEachLine = Array(totalNumberOfLines()).fill({
+            'playerOne': 0,
+            'playerTwo': 0
+        });
         playerOnesMoveList.forEach(squareId => {
             
             
@@ -265,10 +267,13 @@ export default function ClassicGame() {
     }
     
     function getMoveCountsInEachLine(moveList = history) {
+        const playerOnesMoveList = moveList.filter((squareId, turnNumber) => turnNumber % 2 === 0);
+        const playerTwosMoveList = moveList.filter((squareId, turnNumber) => turnNumber % 2 === 1);
         
+        const squaresClaimedInEachLine = Array(totalNumberOfLines().fill(0));
     }
     function linesThatIncludeSquare(squareId){
-
+        verticalLinesList().forEach((squareIds, lineId) => console.log(`Squares in line ${lineId}: ${squareIds}`))
     }
     function verticalLinesThatIncludeSquare(squareId) {
 
@@ -311,19 +316,18 @@ export default function ClassicGame() {
         }
     }
 
-    function newGame() {
-        let cleanBoard = Array(totalSquares).fill('empty');
-        setHistory([cleanBoard]);
-        console.log("History array length: " + history.length);
-        // setGameStatus('red');
+    
+    
+    function handleUndoButtonClick() {
+        const shortenedHistory = history.slice(0, history.length - 1)
+        console.log(`handleUndoButtonClick() removed ${history[history.length - 1]} . New Shortened history: ${shortenedHistory}`);
+        setHistory(shortenedHistory);
     }
-    function undoMove() {
-        // let prevTurn = currentTurn - 1
-        // setCurrentTurn(prevTurn);
-        console.log("History array length unchanged by undo move: " + history.length);
-        // setGameStatus((prevTurn % 2 === 0) ? 'red' : 'yellow');
+    function handleNewGameButtonClick() {
+        const empty = [];
+        console.log(`History reset to: ${empty}`);
+        setHistory(empty);
     }
-
 
 
 
@@ -356,6 +360,8 @@ export default function ClassicGame() {
                 <Panel 
                     // panelStatus={getPanelStatus()}
                     gameStatus="Status of Game"
+                    handleUndoButtonClick={handleUndoButtonClick}
+                    handleNewGameButtonClick={handleNewGameButtonClick}
                 />
 
             </Paper>
