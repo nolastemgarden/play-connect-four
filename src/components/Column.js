@@ -23,20 +23,17 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Column(props) {
     const classes = useStyles();
-    const columnNumber = props.columnNumber;
+    const colNumber = props.colNumber;
     const columnStatus = props.columnStatus;
-
-    // const columnStatus = ['empty', 'empty', 'empty', 'empty', 'player1', 'player1', 'player1']
-    if (columnStatus.length != 6) {
-        console.warn('Rendering Column with height NOT equal to six.');
-    }
-    
 
     let column = [];
     for (let row = 0; row < columnStatus.length; row++) {
+        // const squareId = squaresPerColumn * colNumber + row;
+        const squareId = row;
         let square =
             <Square
-                id={row}
+                id={squareId}
+                key={squareId}
                 squareStatus={columnStatus[row]}
 
             />
@@ -46,12 +43,12 @@ export default function Column(props) {
     return (
         <Box
             className={classes.column}
-        // values={}
+            key={colNumber}
+            onClick={() => props.handleClick(colNumber)}
+        
         >
 
             {column}
-
-
         </Box>
     );
 }
