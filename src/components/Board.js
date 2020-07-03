@@ -30,15 +30,17 @@ export default function Board(props) {
     const columnCount = (boardStatus.length / columnHeight)
     
     let board = [];
-    for (let col = 0; col < columnCount; col++) {
-        const startIndex = (col * columnHeight);
-        const endIndex = ((col + 1) * columnHeight);
+    for (let colNumber = 0; colNumber < columnCount; colNumber++) {
+        const startIndex = (colNumber * columnHeight);
+        const endIndex = ((colNumber + 1) * columnHeight);
         const columnStatus = boardStatus.slice(startIndex, endIndex);
         
         let column =
             <Column
-                id={col}
+                key={colNumber}
+                colNumber={colNumber}
                 columnStatus={columnStatus}
+                handleClick={props.handleColumnClick}
             />;
 
         board = board.concat(column);
