@@ -12,7 +12,7 @@ import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
 const useStyles = makeStyles((theme) => ({
     board: {
-        // border: 'solid red 1px',
+        border: 'solid red 1px',
         width: '800px',
         height: '800px',
         display: 'flex',
