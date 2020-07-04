@@ -76,12 +76,8 @@ export default function ClassicGame() {
     // console.log(`numberOfDownslashLines: ${numberOfDownslashLines}`)
     // console.log(`totalNumberOfLines: ${totalNumberOfLines}`)
 
-
-    let boardStatus = getBoardStatus();
-
-    // The completeLineMap has one Key:Value pair for each lineId to a four-element array containing the squareIds that make up that line.
     
-    
+    // The linesToSquaresMap has one Key:Value pair for each lineId to a four-element array containing the squareIds that make up that line.
     const linesToSquaresMap = completeLineMap();
     function completeLineMap() {
         let completeMap = new Map();
@@ -177,7 +173,7 @@ export default function ClassicGame() {
         return completeMap;
     }
         
-
+    // The squaresToLinesMap has one Key:Value pair mapping each squareId to an array of the Lines that include that squarre. In classic 6x7 game this is at least 3 and at most 13 lines.
     const squaresToLinesMap = getSquaresToLinesMap();
     function getSquaresToLinesMap() {
         let squaresToLinesMap = new Map();
@@ -185,8 +181,8 @@ export default function ClassicGame() {
             squaresToLinesMap.set(squareId, []);
         }
         
-        
-        completeLineMap().forEach((squareList, lineId) => {
+        linesToSquaresMap.forEach((squareList, lineId) => {
+        // completeLineMap().forEach((squareList, lineId) => {
             squareList.forEach(squareId => {
                 let oldLineList = squaresToLinesMap.get(squareId);
                 let updatedLineList = oldLineList.concat(lineId);
@@ -273,16 +269,16 @@ export default function ClassicGame() {
     function getColBySquareId(id) {
         return (Math.floor(id / squaresPerCol))
     }
-    function getUpslashBySquareId(id) {
-        const row = getRowBySquareId(id);
-        const col = getColBySquareId(id);
-        return (squaresPerCol - row + col - 1)
-    }
-    function getDownslashBySquareId(id) {
-        const row = getRowBySquareId(id);
-        const col = getColBySquareId(id);
-        return (row + col)
-    }
+    // function getUpslashBySquareId(id) {
+    //     const row = getRowBySquareId(id);
+    //     const col = getColBySquareId(id);
+    //     return (squaresPerCol - row + col - 1)
+    // }
+    // function getDownslashBySquareId(id) {
+    //     const row = getRowBySquareId(id);
+    //     const col = getColBySquareId(id);
+    //     return (row + col)
+    // }
 
     function allSquareIds(c = squaresPerCol, r = squaresPerRow) { // List of all squareIds to use with Array.filter()
         const totalSquares = c * r;
@@ -311,8 +307,7 @@ export default function ClassicGame() {
         // Start with complete board status and slice out relevant column 
         const bottomSquareId = colNumber * squaresPerCol;
         const topSquareId = bottomSquareId + squaresPerCol;
-        // getBoardStatus().slice
-        const columnStatus = boardStatus.slice(bottomSquareId, topSquareId);
+        const columnStatus = getBoardStatus().slice(bottomSquareId, topSquareId);
         return columnStatus;
     }
     function lowestEmptySquareInColumn(colNumber) {
@@ -381,126 +376,45 @@ export default function ClassicGame() {
     
     function getMoveCountsInEachLine(moveList = history) {
         
-        const moveCountsInEachLine = Array(totalNumberOfLines()).fill({
-            'playerOne': 0,
-            'playerTwo': 0
-        });
+        // const moveCountsInEachLine = Array(totalNumberOfLines()).fill({
+        //     'playerOne': 0,
+        //     'playerTwo': 0
+        // });
 
-        console.log(`Total number of Lines: ${totalNumberOfLines()} `)
-        // console.log(`MoveCountsInEachLine:  `)
-        // console.log(`player1: ${moveCountsInEachLine[0].playerOne}`)
-        // console.log(`palyer2: ${moveCountsInEachLine[0].playerTwo}`)
+        // console.log(`Total number of Lines: ${totalNumberOfLines()} `)
+        // // console.log(`MoveCountsInEachLine:  `)
+        // // console.log(`player1: ${moveCountsInEachLine[0].playerOne}`)
+        // // console.log(`palyer2: ${moveCountsInEachLine[0].playerTwo}`)
 
-        moveList.forEach((squareId, turnNumber) => {
-            const linesToUpdate = linesThatIncludeSquare(squareId);
-            console.log(`Number of Lines to update: ${linesToUpdate.length} `)
-            // if (turnNumber % 2 === 0){
-            //     linesToUpdate.forEach(lineId => {
-            //         const prev = squaresClaimedInEachLine[lineId].playerOne;
-            //         const increased = (prev+=1);
-            //         squaresClaimedInEachLine[lineId].playerOne = increased;
-            //     });
-            // }
-            // else if (turnNumber % 2 === 1) {
-            //     linesToUpdate.forEach(lineId => {
-            //         const prev = squaresClaimedInEachLine[lineId].playerTwo;
-            //         const increased = (prev += 1);
-            //         squaresClaimedInEachLine[lineId].playerTwo = increased;
-            //     });
-            // }
-        });
+        // moveList.forEach((squareId, turnNumber) => {
+        //     const linesToUpdate = linesThatIncludeSquare(squareId);
+        //     console.log(`Number of Lines to update: ${linesToUpdate.length} `)
+        //     // if (turnNumber % 2 === 0){
+        //     //     linesToUpdate.forEach(lineId => {
+        //     //         const prev = squaresClaimedInEachLine[lineId].playerOne;
+        //     //         const increased = (prev+=1);
+        //     //         squaresClaimedInEachLine[lineId].playerOne = increased;
+        //     //     });
+        //     // }
+        //     // else if (turnNumber % 2 === 1) {
+        //     //     linesToUpdate.forEach(lineId => {
+        //     //         const prev = squaresClaimedInEachLine[lineId].playerTwo;
+        //     //         const increased = (prev += 1);
+        //     //         squaresClaimedInEachLine[lineId].playerTwo = increased;
+        //     //     });
+        //     // }
+        // });
 
     }
     
-    
-    function linesThatIncludeSquare(squareId){
-        // Rather than trying to reinvent a way to get all the line Ids a square is in by getting all lines contents and filtering out those which do not include the square in question...
-        // I will use low-level helpers and this observation
-        let linesThatIncludeSquare = [];
-
-        const colNumber = getColBySquareId(squareId);
-        const rowNumber = getRowBySquareId(squareId);
-        const upslashNumber = getUpslashBySquareId(squareId);
-        const downslashNumber = getDownslashBySquareId(squareId);
-        
-        linesThatIncludeSquare = [
-            getVerticalLinesThatIncludeSquare(squareId),
-            getHorizontalLinesThatIncludeSquare(squareId)
-        ]
-        
-        
-        
-        
-        console.log(`Square ${squareId} is a part of Lines: ${linesThatIncludeSquare}`)
-
-        return linesThatIncludeSquare;
-    }
     
     
 
 
 
-    // In squareMap these numbers ARE NOT LineIds, thye are colNumbers, rowNumbers, etc.
-    // const squareMap = getSquareMap();  
-    function getSquareMap() {
-        let map = new Map();
-        for (let squareId = 0; squareId < totalSquares(); squareId++) {
-            let ids = {
-                'squareId': squareId,
-                'col': getColBySquareId(squareId),
-                'row': getRowBySquareId(squareId),
-                'upslash': getUpslashBySquareId(squareId),
-                'downslash': getDownslashBySquareId(squareId),
-            }
-            map.set(squareId, ids);
-        }
-
-        return map;
-    }
     
-    // LINES are numbered according to the following scheme:
-    // vert lines in 
-    function getVerticalLinesThatIncludeSquare(squareId) {
-        // Vertical lines are numbered starting from 0.
-        let listOfLineNumbers = [];
-        const colNumber = getColBySquareId(squareId);
-        const firstLineNumber = colNumber * linesPerCol()
-
-        for (let i = 0; i < numberOfVerticalLinesSquareIsIn(squareId); i++){
-            let currentLineNumber = firstLineNumber + i;
-            listOfLineNumbers = listOfLineNumbers.concat(currentLineNumber);
-        }
-        return listOfLineNumbers;
-    }
-    function getHorizontalLinesThatIncludeSquare(squareId) {
-        // Horizontal lines are numbered starting from numberOfVerticalLines().
-        let listOfLineNumbers = [];
-        const rowNumber = getRowBySquareId(squareId);
-        const firstLineNumber = numberOfVerticalLines() + rowNumber * linesPerRow()
-
-        for (let i = 0; i < numberOfHorizontalLinesSquareIsIn(squareId); i++) {
-            let currentLineNumber = firstLineNumber + i;
-            listOfLineNumbers = listOfLineNumbers.concat(currentLineNumber);
-        }
-        return listOfLineNumbers;
-    }
-    function getUpslashLinesThatIncludeSquare(squareId) {
-        // Upslash lines are numbered starting from numberOfVerticalLines() + numberOfHorizontalLines().
-        let listOfLineNumbers = [];
-        let slashNumber = getUpslashBySquareId(squareId);
-        let squaresInSlash = squaresInSlash(slashNumber)
-        
-        // const firstLineNumber = numberOfVerticalLines() + numberOfHorizontalLines() + slashNumber * linesPerUpslash()
-
-        // for (let i = 0; i < numberOfUpslashLinesSquareIsIn(squareId); i++) {
-        //     let currentLineNumber = firstLineNumber + i;
-        //     listOfLineNumbers = listOfLineNumbers.concat(currentLineNumber);
-        // }
-        return listOfLineNumbers;
-    }
-    function getDownslashLinesThatIncludeSquare(squareId) {
-
-    }
+    
+    
 
     function numberOfVerticalLinesSquareIsIn(squareId) {
         // Every square is in at least one and at most four VerticalLines
@@ -525,7 +439,7 @@ export default function ClassicGame() {
         let col = getColBySquareId(squareId)
         
         
-        let upslash = getUpslashBySquareId(squareId)
+        // let upslash = getUpslashBySquareId(squareId)
 
         // let squaresInSlash = 
 
@@ -593,9 +507,10 @@ export default function ClassicGame() {
             <Paper className={classes.paper} >
                 
                 <Board 
-                    boardStatus= {boardStatus}
+                    boardStatus={getBoardStatus()}
                     columnHeight= {6}
                     handleColumnClick={handleColumnClick}
+                    getColumnStatus={getColumnStatus}
                 />
 
                 <Panel 
