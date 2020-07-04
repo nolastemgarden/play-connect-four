@@ -29,12 +29,15 @@ export default function Board(props) {
     const columnHeight = props.columnHeight;
     const boardStatus = (validateBoardStatus(props.boardStatus, columnHeight) === 0 ) ? props.boardStatus : Array(42).fill('empty');
     const columnCount = (boardStatus.length / columnHeight)
+
+    let getColumnStatus = props.getColumnStatus;
     
     let board = [];
     for (let colNumber = 0; colNumber < columnCount; colNumber++) {
-        const startIndex = (colNumber * columnHeight);
-        const endIndex = ((colNumber + 1) * columnHeight);
-        const columnStatus = boardStatus.slice(startIndex, endIndex);
+        // const startIndex = (colNumber * columnHeight);
+        // const endIndex = ((colNumber + 1) * columnHeight);
+        // const columnStatus = boardStatus.slice(startIndex, endIndex);
+        let columnStatus = getColumnStatus(colNumber);
         
         let column =
             <Column
@@ -54,6 +57,8 @@ export default function Board(props) {
     );
 
 }
+
+
 
 
 function validateBoardStatus(boardStatus, columnHeight) {
