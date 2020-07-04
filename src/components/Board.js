@@ -58,7 +58,7 @@ export default function Board(props) {
 
 function validateBoardStatus(boardStatus, columnHeight) {
     if (boardStatus.length !== 42) {
-        console.warn('Rendering Board with number of squares NOT equal to 42.');
+        console.warn(`Rendering Board with number of squares NOT equal to 42. It is ${boardStatus.length}`);
         return 1;
     }
     if (boardStatus.length % columnHeight !== 0) {

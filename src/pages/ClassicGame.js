@@ -49,7 +49,7 @@ export default function ClassicGame() {
     let [history, setHistory] = useState(Array(0)); // console.log("History initialized to: " + history);
     // let [history, setHistory] = useState([2,3,4,5,1,7,6,11,33]);  // FOR DEV AND TESTING PURPOSES ONLY
     
-    const boardStatus = getBoardStatus();
+    
 
     // A "Line" defined here to mean a set of four squareIds that together constitute a win. There is a fixed set of lineIds. 
     // Each Line has a unique id that serves as a KEY mapped to a VALUE that represents the number of claimed squares in that line (sort of)
@@ -61,10 +61,13 @@ export default function ClassicGame() {
     // Game Constants
     const squaresPerCol = 6;
     const squaresPerRow = 7;
+    
+    
     function totalSquares() {
         return squaresPerCol * squaresPerRow;
     }
 
+    const boardStatus = getBoardStatus();
 
     const squareMap = getSquareMap();  // squareMap enables quick 
     function getSquareMap() {
@@ -84,15 +87,56 @@ export default function ClassicGame() {
     }
 
     const lineMap = getLineMap();  // Maps each lineId to the set of squares in it.
+        // Each Line is defined as having ONE start square, usually it's the left-most but in the case of vertical lines it is the bottom-most. 
+        // Each line has a UNIQUE lineId that matches the squareId of its starting square. 
+        // Lines are not consecutively numbered but since they are stored in a Map we can iterate over a set of lineIds keys() of forEach() rather than a simple for-loop.
+
     function getLineMap() {
         let map = new Map();
         
-        map.set('vertical', Array(numberOfVerticalLines()))
+        map.set('vertical', verticalLineMap());
+        map.set('horizontal', horizontalLineMap());
+        // map.set('upslash', upslashLineMap());
+        // map.set('downslash', downslashLineMap());
         
-        
+        // console.log(`Vertical Lines Map:`)
+        // console.log(`${map.get('vertical').forEach(logMapElements)}`)
+
+        console.log(`Horizontal Lines Map:`)
+        console.log(`${map.get('horizontal').forEach(logMapElements)}`)
+
+        return map;
+    }
+    
+    function verticalLineMap() {            
+        let map = new Map();
+        for (let squareId = 0; squareId < totalSquares(); squareId++){
+            if (isStartOfVerticalLine(squareId)){
+                let squaresInLine = new Array(squareId, squareId + 1, squareId + 2, squareId + 3) 
+                map.set(squareId, squaresInLine)
+            }
+        }
+        return map;
+    }
+    function horizontalLineMap() {
+        let map = new Map();
+        for (let squareId = 0; squareId < totalSquares(); squareId++) {
+            if (isStartOfHorizontalLine(squareId)) {
+                let first  = squareId + (0 * squaresPerCol);
+                let second = squareId + (1 * squaresPerCol);
+                let third  = squareId + (2 * squaresPerCol);
+                let fourth = squareId + (3 * squaresPerCol);
+                let squaresInLine = new Array(first, second, third, fourth)
+                map.set(squareId, squaresInLine)
+            }
+        }
         return map;
     }
 
+
+    function logMapElements(value, key, map) {
+        console.log(`Map Key: ${key}  Value: ${value}`);
+    }
 
 
     function linesPerCol() {
@@ -136,9 +180,6 @@ export default function ClassicGame() {
     // BOOLEAN helpers  
     // Currently there is only a Square.js functional Component, however if I defined a Square Class I would think that I could turn these functions that take squareId as a parameter and turn them into something that 'reads better' like Square.isStartOfVerticalLine() written on the Square object so that it has built in access to the relevant squareId and can be used in a no-parameter fashion. ??? 
     function isStartOfVerticalLine(squareId) {
-        // To check if a square is the start of a verticalLine we need its rowNumber and the height of each column (squaresPerCol).
-        // If there are 3 MORE squares in the column above it then return TRUE, it is the start of a vertical Line.
-        // rowNumber has 0-based indexing. If we are in the 0-th row then the minimum squaresPerCol that should return true is 4
         const rowNumber = getRowBySquareId(squareId);
         return (squaresPerCol - rowNumber >= 4);
     }
@@ -199,7 +240,7 @@ export default function ClassicGame() {
     function getBoardStatus(moveList = history) {
         // Recall that history is an array of squareIds in the order they were claimed.
         // console.log(`History being used by getBoardStatus: ${moveList}`)
-        const boardStatus = Array(totalSquares).fill('empty');
+        let boardStatus = Array(totalSquares()).fill('empty');
         moveList.forEach((squareId, turnNumber) => {
             if (turnNumber % 2 === 0){
                 boardStatus.splice(squareId, 1, 'player1') 
