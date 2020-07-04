@@ -96,15 +96,19 @@ export default function ClassicGame() {
         
         map.set('vertical', verticalLineMap());
         map.set('horizontal', horizontalLineMap());
-        // map.set('upslash', upslashLineMap());
-        // map.set('downslash', downslashLineMap());
+        map.set('upslash', upslashLineMap());
+        map.set('downslash', downslashLineMap());
         
+        // TESTED and VERIFIED 
         // console.log(`Vertical Lines Map:`)
         // console.log(`${map.get('vertical').forEach(logMapElements)}`)
-
-        console.log(`Horizontal Lines Map:`)
-        console.log(`${map.get('horizontal').forEach(logMapElements)}`)
-
+        // console.log(`Horizontal Lines Map:`)
+        // console.log(`${map.get('horizontal').forEach(logMapElements)}`)
+        // console.log(`Upslash Lines Map:`)
+        // console.log(`${map.get('upslash').forEach(logMapElements)}`)
+        // console.log(`Downslash Lines Map:`)
+        // console.log(`${map.get('downslash').forEach(logMapElements)}`)
+        console.log(`Generated Line Map with ${map.size} key-value pairs.`)
         return map;
     }
     
@@ -132,7 +136,34 @@ export default function ClassicGame() {
         }
         return map;
     }
-
+    function upslashLineMap() {
+        let map = new Map();
+        for (let squareId = 0; squareId < totalSquares(); squareId++) {
+            if (isStartOfUpslashLine(squareId)) {
+                let first  = squareId + 0 * (squaresPerCol + 1);
+                let second = squareId + 1 * (squaresPerCol + 1);
+                let third  = squareId + 2 * (squaresPerCol + 1);
+                let fourth = squareId + 3 * (squaresPerCol + 1);
+                let squaresInLine = new Array(first, second, third, fourth)
+                map.set(squareId, squaresInLine)
+            }
+        }
+        return map;
+    }
+    function downslashLineMap() {
+        let map = new Map();
+        for (let squareId = 0; squareId < totalSquares(); squareId++) {
+            if (isStartOfDownslashLine(squareId)) {
+                let first  = squareId + 0 * (squaresPerCol - 1);
+                let second = squareId + 1 * (squaresPerCol - 1);
+                let third  = squareId + 2 * (squaresPerCol - 1);
+                let fourth = squareId + 3 * (squaresPerCol - 1);
+                let squaresInLine = new Array(first, second, third, fourth)
+                map.set(squareId, squaresInLine)
+            }
+        }
+        return map;
+    }
 
     function logMapElements(value, key, map) {
         console.log(`Map Key: ${key}  Value: ${value}`);
