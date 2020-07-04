@@ -70,11 +70,11 @@ export default function ClassicGame() {
     let numberOfDownslashLines = linesPerCol * linesPerRow;
     let totalNumberOfLines = numberOfVerticalLines + numberOfHorizontalLines + numberOfUpslashLines + numberOfDownslashLines;
     
-    console.log(`numberOfVerticalLines: ${numberOfVerticalLines}`)
-    console.log(`numberOfHorizontalLines: ${numberOfHorizontalLines}`)
-    console.log(`numberOfUpslashLines: ${numberOfUpslashLines}`)
-    console.log(`numberOfDownslashLines: ${numberOfDownslashLines}`)
-    console.log(`totalNumberOfLines: ${totalNumberOfLines}`)
+    // console.log(`numberOfVerticalLines: ${numberOfVerticalLines}`)
+    // console.log(`numberOfHorizontalLines: ${numberOfHorizontalLines}`)
+    // console.log(`numberOfUpslashLines: ${numberOfUpslashLines}`)
+    // console.log(`numberOfDownslashLines: ${numberOfDownslashLines}`)
+    // console.log(`totalNumberOfLines: ${totalNumberOfLines}`)
 
 
     let boardStatus = getBoardStatus();
@@ -82,8 +82,7 @@ export default function ClassicGame() {
     // The completeLineMap has one Key:Value pair for each lineId to a four-element array containing the squareIds that make up that line.
     
     
-    let lineIdToSquaresListMap = completeLineMap();
-    
+    const linesToSquaresMap = completeLineMap();
     function completeLineMap() {
         let completeMap = new Map();
 
@@ -96,8 +95,9 @@ export default function ClassicGame() {
             });
         })
 
-        console.log(`Generated Complete Line Map with ${completeMap.size} key-value pairs.`)
-        completeMap.forEach(logMapElements);
+        // PRINT TO CONSOLE FOR TESTING
+        // console.log(`Generated Complete Line Map with ${completeMap.size} key-value pairs.`)
+        // completeMap.forEach(logMapElements);
 
         // HELPERS ONLY USED INTERNALLY 
         function logMapElements(squareIdList, lineId) {
@@ -177,11 +177,8 @@ export default function ClassicGame() {
         return completeMap;
     }
         
-     
-
 
     const squaresToLinesMap = getSquaresToLinesMap();
-
     function getSquaresToLinesMap() {
         let squaresToLinesMap = new Map();
         for (let squareId = 0; squareId < totalSquares; squareId++) {
@@ -197,8 +194,9 @@ export default function ClassicGame() {
             })
         })
         
-        console.log(`Mapped each of the ${squaresToLinesMap.size} SquareIds to the Lines that include them:`)
-        squaresToLinesMap.forEach(logMapElements);
+        // PRINT TO CONSOLE FOR TESTING
+        // console.log(`Mapped each of the ${squaresToLinesMap.size} SquareIds to the Lines that include them:`)
+        // squaresToLinesMap.forEach(logMapElements);
 
         // HELPERS ONLY USED INTERNALLY 
         function logMapElements(lineIdList, squareId) {
@@ -208,19 +206,30 @@ export default function ClassicGame() {
     }
 
 
+    let linesToStatusMap = getLinesToStatusMap();
+    function getLinesToStatusMap(moveList = history) {
+        let linesToStatusMap = new Map();
+
+        for (let lineId = 0; lineId < totalNumberOfLines; lineId++) {
+            let status = {
+                'playerOne': 0,
+                'playerTwo': 0,
+                'empty': 4
+            }
+            linesToStatusMap.set(lineId, status);
+        }
 
 
+        // PRINT TO CONSOLE FOR TESTING
+        console.log(`Mapped each of the ${totalNumberOfLines} LineIds to its initial status: `)
+        linesToStatusMap.forEach(logLineIdAndStatus);
 
-
-    
-    function linesInSlash(slashId) {
-        // const linesPerRow = (r - 4 >= 0) ? (r - 3) : 0;
-        // return linesPerRow;
+        // HELPERS ONLY USED INTERNALLY 
+        function logLineIdAndStatus(status, lineId) {
+            console.log(`LineId: ${lineId}  has status:  playerOne: ${status.playerOne}  playerTwo: ${status.playerTwo}  empty: ${status.empty}`);
+        }
+        return squaresToLinesMap;
     }
-    
-    
-
-    
 
 
     // BOOLEAN helpers  
