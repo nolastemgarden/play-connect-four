@@ -37,7 +37,7 @@ export default function Board(props) {
         // const startIndex = (colNumber * columnHeight);
         // const endIndex = ((colNumber + 1) * columnHeight);
         // const columnStatus = boardStatus.slice(startIndex, endIndex);
-        let columnStatus = getColumnStatus(colNumber);
+        let columnStatus = getColumnStatus(colNumber, boardStatus);
         
         let column =
             <Column
