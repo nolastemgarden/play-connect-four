@@ -66,7 +66,18 @@ export default function ClassicGame() {
     const lineIdToSquareIdsMap = getLineIdToSquareIdsMap();     // The linesToSquaresMap has one Key:Value pair for each lineId to a four-element array containing the squareIds that make up that line.
     const squareIdToLineIdsMap = getSquareIdToLineIdsMap();     // The squaresToLinesMap has one Key:Value pair mapping each squareId to an array of the Lines that include that squarre. In classic 6x7 game this is at least 3 and at most 13 lines.
 
-    // GAME STATE
+    
+    // STATE INITIALIZING and UPDATING helpers
+    let newGameMoveList = Array(0);
+    let statusOnTurnZero = {
+        "turnNumber": 0,
+        "moveList": newGameMoveList,
+        "boardStatus": Array(totalSquares).fill('empty'),
+        "lineStatusMap": initialLineStatusMap(),
+        "gameStatus": 'playerOneToMove'
+    }
+    
+    // GAME'S STATE
     let [currentTurnNumber, setCurrentTurnNumber] = useState(0);  // Use the "turnStatus" Object stored at this index in the history Array.
     let [history, setHistory] = useState([statusOnTurnZero]); 
 
@@ -78,7 +89,9 @@ export default function ClassicGame() {
     function getColBySquareId(id) {
         return (Math.floor(id / squaresPerCol))
     }
-    // function getSquareIdByRowCol(row, col) { return (col * squaresPerCol + row);  }
+    function getSquareIdByRowCol(row, col) { 
+        return (col * squaresPerCol + row);  
+    }
     
     
     // FIRST level BOOLEAN LINE helpers             // Currently there is only a Square.js functional Component, however if I defined a Square Class I would think that I could turn these functions that take squareId as a parameter and turn them into something that 'reads better' like Square.isStartOfVerticalLine() written on the Square object so that it has built in access to the relevant squareId and can be used in a no-parameter fashion. ??? 
@@ -110,83 +123,144 @@ export default function ClassicGame() {
     }
 
     
-
-    // STATUS GETTERS for Board and Column
-    function getBoardStatus(moveList = history) {
-        // Recall that history is an array of squareIds in the order they were claimed.
-        // console.log(`History being used by getBoardStatus: ${moveList}`)
-        let boardStatus = Array(totalSquares).fill('empty');
-        moveList.forEach((squareId, turnNumber) => {
-            if (turnNumber % 2 === 0){
-                boardStatus.splice(squareId, 1, 'player1') 
-            }
-            else {
-                boardStatus.splice(squareId, 1, 'player2') 
-            }
-        });
-        // console.log(`Board Status: ${boardStatus}`)
-        return boardStatus;
-    }
-    function getColumnStatus(colNumber) {
-        // Start with complete board status and slice out relevant column 
-        const bottomSquareId = colNumber * squaresPerCol;
-        const topSquareId = bottomSquareId + squaresPerCol;
-        const columnStatus = getBoardStatus().slice(bottomSquareId, topSquareId);
+    // Board to Column Helpers    
+    function getColumnStatus(colNumber, boardStatus) {
+        // console.log(`getColumnStatus called for colNumber: ${colNumber} and boardStatus ${boardStatus}`)
+        let fromSquareId = colNumber * squaresPerCol;
+        let toSquareId = fromSquareId + squaresPerCol;
+        // console.log(`getColumnStatus will slice boardStatus fromId: ${fromSquareId}   toId: ${toSquareId}`)
+        let columnStatus = boardStatus.slice(fromSquareId, toSquareId);
         return columnStatus;
     }
-    function lowestEmptySquareInColumn(colNumber) {
-        const status = getColumnStatus(colNumber);
-        const lowestEmptyRow = status.indexOf('empty');
-        let lowestEmptySquare = -1;
-        // Returning -1 indicates "the requested column is Full."
+    function lowestEmptySquareInCol(colStatus, colNumber) {
+        // console.log(`lowestEmptySquareInCol recieved props colStatus: ${colStatus} and colNumber: ${colNumber}`)
+        let lowestEmptyRow = colStatus.indexOf('empty');
+        let lowestEmptySquare = -1;   // Returning -1 indicates "the requested column is Full."
         if (lowestEmptyRow !== -1) {
-            lowestEmptySquare = squaresPerCol * colNumber + lowestEmptyRow;
+            lowestEmptySquare = getSquareIdByRowCol(lowestEmptyRow, colNumber)
         } 
         return lowestEmptySquare;
     }
 
 
-    // STATUS GETTERS for Panel
-    function updateGameStatus() {
-        if (gameIsOver()){
-            if (playerOneWins()){
-                return "Player One Wins!";
+    // Get VALUES for creating a Turn Status object. 
+    function getBoardStatus(moveList) {
+        let boardStatus = Array(totalSquares).fill('empty');
+        moveList.forEach((squareId, turnNumber) => {
+            if (turnNumber % 2 === 0) {
+                boardStatus.splice(squareId, 1, 'playerOne')
             }
-            else if (playerTwoWins()) {
-                return "Player Two Wins!";
+            else {
+                boardStatus.splice(squareId, 1, 'playerTwo')
             }
-            else if (gameDrawn()) {
-                return "Game Over. Draw.";
-            }
+        });
+        // console.log(`Board Status: ${boardStatus}`)
+        return boardStatus;
+    }
+    function getLineStatusMap(updatedMoveList) {
+        let turnNumber = updatedMoveList.length;   // turnNumbers are 0-indexed! When it is turn 0 there is still one status object in the history
+        if (turnNumber <= 0) {
+            console.error(`Given that is is turn zero you probably meant to use initialLineStatusMap(), not getLineStatusMap() `);
+            // return initialLineStatusMap()
         }
-        else if (history.length % 2 === 0) {
-            return "Player One's Turn";
+    
+        let previousLineStatusMap = history[turnNumber - 1].lineStatusMap;  // Start with the Map from the PREVIOUS turn
+        let updatedLineStatusMap = history[turnNumber - 1].lineStatusMap;   // Start with the Map from the PREVIOUS turn
+        let mostRecentPlayer = (turnNumber % 2 === 1) ? "playerOne" : "playerTwo";
+        let mostRecentSquareClaimed = updatedMoveList[turnNumber - 1];
+        
+        let linesToUpdate = squareIdToLineIdsMap.get(mostRecentSquareClaimed);
+        linesToUpdate.forEach(lineId => {
+            let previousLineStatus = previousLineStatusMap.get(lineId);
+            let updatedLineStatus;
+            if (mostRecentPlayer === "playerOne") {
+                updatedLineStatus = {
+                    'playerOne': ++previousLineStatus.playerOne,
+                    'playerTwo': previousLineStatus.playerTwo,
+                    'empty': --previousLineStatus.empty
+                }
+            }
+            else if (mostRecentPlayer === "playerTwo") {
+                updatedLineStatus = {
+                    'playerOne': previousLineStatus.playerOne,
+                    'playerTwo': ++previousLineStatus.playerTwo,
+                    'empty': --previousLineStatus.empty
+                }
+            }
+            else { console.error(`getLineStatusMap(moveList) is Broken.`) }
+            updatedLineStatusMap.set(lineId, updatedLineStatus);
+        });
+
+        // TESTING
+        console.log(`Testing getLineStatusMap for turnNumber ${turnNumber}.`)
+        console.log(`mostRecentPlayer: ${mostRecentPlayer} just claimed square ${mostRecentSquareClaimed}`)
+        printLinesToStatusMap(updatedLineStatusMap)
+        return updatedLineStatusMap;
+    }
+    function getGameStatus(turnNumber, lineStatusMap) {
+        // console.log(`GET GAME STATUS recieved lineStatusMap: `)
+        // printLinesToStatusMap(lineStatusMap);
+
+        
+        // There  are FIVE posssible Game Status values.  THREE cases where game is over.
+        if (playerOneWins(lineStatusMap)){
+            console.log("Player One Wins!")
+            return 'playerOneWins';
         }
-        else if (history.length % 2 === 1) {
-            return "Player One's Turn";
+        else if (playerTwoWins(lineStatusMap)) {
+            console.log("Player Two Wins!")
+            return 'playerTwoWins';
+        }
+        else if (gameDrawn(lineStatusMap)) {
+            console.log("Game Over. Draw.")
+            return 'gameDrawn';
+        }
+        else if (playerOneToMove(turnNumber) === true) {
+            console.log("Player One to Move.")
+            return 'playerOneToMove';
+        }
+        else if (playerOneToMove(turnNumber) === false) {
+            console.log("Player Two to Move.")
+            return 'playerTwoToMove';
         }
         else {
-            console.console.error(`Invalid result in gameStatusForPanel()`);
+            console.error(`Invalid result in getGameStatus`);
             return 1;
         }
-    }
-    function gameIsOver(moveList = history) {
-        if (playerOneWins() || playerTwoWins() || gameDrawn()) {
-            return true;  // Return true because the game is over.
+    
+        // Internally uesd Helper Functions
+        function playerOneWins(lineStatusMap) {
+            let playerOnesMoveCounts = [];
+            lineStatusMap.forEach((lineStatus, lineId) => {
+                playerOnesMoveCounts = playerOnesMoveCounts.concat(lineStatus.playerOne);
+            });
+            // console.log(`Player One Move Counts: ${playerOnesMoveCounts}`)
+            return(playerOnesMoveCounts.includes(4))
         }
-        else {
-            return false;
-        } 
-    }
-    function playerOneWins() {
+        function playerTwoWins(lineStatusMap) {
+            let playerTwosMoveCounts = [];
+            lineStatusMap.forEach((lineStatus, lineId) => {
+                playerTwosMoveCounts = playerTwosMoveCounts.concat(lineStatus.playerTwo);
+            });
+            // console.log(`Player One Move Counts: ${playerOnesMoveCounts}`)
+            return (playerTwosMoveCounts.includes(4))
+        }
+        function gameDrawn(lineStatusMap) {
+            let playerOnesMoveCounts = [];
+            lineStatusMap.forEach((lineStatus, lineId) => {
+                playerOnesMoveCounts = playerOnesMoveCounts.concat(lineStatus.playerOne);
+            });
         
-
-    }
-    function playerTwoWins(moveList = history) {
-
-    }
-    function gameDrawn(moveList = history) {
-
+            let playerTwosMoveCounts = [];
+            lineStatusMap.forEach((lineStatus, lineId) => {
+                playerTwosMoveCounts = playerTwosMoveCounts.concat(lineStatus.playerTwo);
+            });
+            // console.log(`Player One Move Counts: ${playerOnesMoveCounts}`)
+            return (!playerOnesMoveCounts.includes(0) && !playerTwosMoveCounts.includes(0))
+        }
+        function playerOneToMove(turnNumber) {
+            return (turnNumber % 2 === 0);
+        }    
     }
     
     
@@ -194,41 +268,60 @@ export default function ClassicGame() {
     
     // CLICK HANDLERS
     function handleColumnClick(colNumber) {
-        
-        
-        let moveList = history.slice();
-        let newMove = lowestEmptySquareInColumn(colNumber);
-        console.log(`Handling Click for Column: ${colNumber} using old history: ${moveList}. Attempting move ${newMove}`)
-        
-        if (gameIsOver()) {
-            console.log(`Game is already over!`)
+        console.log(`handleColumnClick has been called with colNumber: ${colNumber} and currentTurnNumber: ${currentTurnNumber} `)
+        let currentTurnStatus = history[currentTurnNumber];
+        let status = currentTurnStatus.gameStatus;
+        console.log(`Game Status before Handling Click : ${status}`)
+        // There are TWO reasons we might Return Early: 
+        // (1) Game already over, 
+        let gameIsOver = (status === 'playerOneWins' || status === 'playerTwoWins' || status === 'gameDrawn')
+        if (gameIsOver) {
+            console.log(`Returning Early from handleClick() since Game is already over!`)
             return -1;
         }
-        else if (newMove === -1){
+        // (2) Clicked Column already full.
+        let boardStatus = currentTurnStatus.boardStatus;
+        let colStatus = getColumnStatus(colNumber, boardStatus);
+        // console.log(`Calling lowestEmptySquareInCol with colStatus: ${colStatus} and colNumber: ${colNumber}`)
+        let moveToAdd = lowestEmptySquareInCol(colStatus, colNumber);
+        console.log(`lowestEmptySquareInCol found square id: ${moveToAdd}`)
+        if (moveToAdd === -1) {
             console.log(`Clicked column is already full!`)
             return -1;
         }  
-        else {
-            let updatedHistory = moveList.concat(newMove);
-            console.log(`About to setHistory to updatedHistory: ${updatedHistory}`)
-            setHistory(updatedHistory);
-            updateLinesToStatusMap(updatedHistory);
+       
+        let updatedMoveList = currentTurnStatus.moveList.concat(moveToAdd);
+        let updatedTurnNumber = updatedMoveList.length;
+        let updatedLineStatusMap = getLineStatusMap(updatedMoveList);
+        let updatedGameStatus = getGameStatus(updatedTurnNumber, updatedLineStatusMap)
+        let newTurnStatus = {
+            "turnNumber": updatedMoveList.length,
+            "moveList": updatedMoveList,
+            "boardStatus": getBoardStatus(updatedMoveList),
+            "lineStatusMap": updatedLineStatusMap,
+            "gameStatus": updatedGameStatus
         }
-        if (gameIsOver()) {
-            console.log(`Game is now over!`)
-            
-        }
-        // else {} This is where we Would find and make the Computer Move if in Play vs. Computer Mode
-     }
+        
+        console.log(`About to add newTurnStatus to the History array: `);
+        logTurnStatusObject(newTurnStatus);
+        
+        setHistory(history.concat(newTurnStatus));
+        setCurrentTurnNumber(++currentTurnNumber);
+
+        console.log(`Done Handling Click. It is now Turn Number ${currentTurnNumber} and the Game Status is: ${newTurnStatus.gameStatus}`);   // 
+
+        // This is where we Would find and make the Computer Move if in Play vs. Computer Mode
+        return 0;
+    }
     function handleUndoButtonClick() {
-        const shortenedHistory = history.slice(0, history.length - 1)
-        console.log(`handleUndoButtonClick() removed ${history[history.length - 1]} . New Shortened history: ${shortenedHistory}`);
-        setHistory(shortenedHistory);
+        // const shortenedHistory = history.slice(0, history.length - 1)
+        // console.log(`handleUndoButtonClick() removed ${history[history.length - 1]} . New Shortened history: ${shortenedHistory}`);
+        // setHistory(shortenedHistory);
     }
     function handleNewGameButtonClick() {
-        const empty = [];
-        console.log(`History reset to: ${empty}`);
-        setHistory(empty);
+        setHistory([statusOnTurnZero]);
+        setCurrentTurnNumber(0);
+        console.log(`Starting a NEW GAME ***********`);
     }
 
     
@@ -242,17 +335,20 @@ export default function ClassicGame() {
             console.log(`LineId: ${lineId}  has status:  playerOne: ${status.playerOne}  playerTwo: ${status.playerTwo}  empty: ${status.empty}`);
         });
     }
-    
-    
-    // STATE INITIALIZING and UPDATING
-    let statusOnTurnZero = {
-        "turnNumber": 0,
-        "moveList": Array(turnNumber),
-        "boardStatus": Array(totalSquares).fill('empty'),
-        "lineStatusMap": getLineStatusMap(moveList),
-        "gameStatus": 'playerOneToMove'
+    function logTurnStatusObject(object) {
+        // console.log(`Turn Status Object:`);
+        console.log(`turnNumber: ${object.turnNumber}`);
+        console.log(`moveList: ${object.moveList}`);
+        console.log(`boardStatus: omitted Array(42)`);
+        // console.log(`lineStatusMap: ${printLinesToStatusMap(object.lineStatusMap)}`);
+        console.log(`gameStatus: ${object.gameStatus}`);
     }
-
+    function logLineStatusObject(object) {
+        // console.log(`Turn Status Object:`);
+        console.log(`playerOne: ${object.playerOne}`);
+        console.log(`playerTwo: ${object.playerTwo}`);
+        console.log(`empty: ${object.empty}`);
+    }
 
 
     // MAP MAKING FUNCTIONS
@@ -265,7 +361,8 @@ export default function ClassicGame() {
                 completeMap.set(lineId, squareIdList);
             });
         })
-        console.log(`Generated Map of LineIds to the four SquareIds in each. There are ${completeMap.size} LineIds in the Map.`)
+        // CONFUSING point: For now I have just silenced the following console.log because it runs everytime handleColumnClick is called.  This means the map is being recreated from scratch each turn of the game unnecesarily. Perhaps I could solve this by moving the entire ClassicGame() inside a wrapper component that is strictly for holding complex CONSTANTS that ClassGame uses but only needs to compute once such as the Maps.
+        // console.log(`Generated Map of LineIds to the four SquareIds in each. There are ${completeMap.size} LineIds in the Map.`)
         // completeMap.forEach(logMapElement);
         // The following four HELPERS bear responsibility for corresponding the lists of squares to their correct final lineIds.  This is simple for vertical lines but requires consideartion of the startingId for the latter three. 
         function verticalLineMap() {
@@ -344,12 +441,13 @@ export default function ClassicGame() {
         for (let squareId = 0; squareId < totalSquares; squareId++) {
             squaresToLinesMap.set(squareId, []);
         }
-        linesToSquaresMap.forEach((squaresList, lineId) => {
+        lineIdToSquareIdsMap.forEach((squaresList, lineId) => {
             squaresList.forEach(squareId => {
                 squaresToLinesMap.set(squareId, squaresToLinesMap.get(squareId).concat(lineId));
             })
         })
-        console.log(`Mapped each of the ${totalSquares} SquareIds to the set of all Lines that include it.`)
+        // CONFUSING point: For now I have just silenced the following console.log because it runs everytime handleColumnClick is called.  This means the map is being recreated from scratch each turn of the game unnecesarily. Perhaps I could solve this by moving the entire ClassicGame() inside a wrapper component that is strictly for holding complex CONSTANTS that ClassGame uses but only needs to compute once such as the Maps.
+        // console.log(`Mapped each of the ${totalSquares} SquareIds to the set of all Lines that include it.`)
         // squaresToLinesMap.forEach(logMapElement);
         return squaresToLinesMap;
     }
@@ -365,44 +463,10 @@ export default function ClassicGame() {
         }
         return lineStatusMap;
     }
-    function getLineStatusMap(moveList) {
-        let turnNumber = moveList.length;   // turnNumbers are 0-indexed! When it is turn 0 there is still one status object in the history
-        if (turnNumber === 0) {
-            return initialLineStatusMap();
-        }
-        else {
-            let lineStatusMap = history[turnNumber - 1].lineStatusMap;  // Start with the Map from the PREVIOUS turn
-            let mostRecentPlayer = (turnNumber % 2 === 0) ? "playerOne" : "playerTwo";
-            let mostRecentSquareClaimed = moveList[turnNumber-1];
-            console.log(`Getting lineStatusMap for turnNumber ${turnNumber}. ${mostRecentPlayer} just claimed square ${mostRecentSquareClaimed}... `)
+    
 
-            let linesToUpdate = squareIdToLineIdsMap.get(mostRecentSquareClaimed);
-            linesToUpdate.forEach(lineId => {
-                let previousLineStatus = lineStatusMap.get(lineId);
-                let updatedStatus;
-                if (mostRecentPlayer === "playerOne") {
-                    updatedStatus = {
-                        'playerOne': previousLineStatus.playerOne++,
-                        'playerTwo': previousLineStatus.playerTwo,
-                        'empty': previousLineStatusStatus.empty--
-                    }
-                }
-                else if (mostRecentPlayer === "playerTwo") {
-                    updatedStatus = {
-                        'playerOne': previousLineStatus.playerOne,
-                        'playerTwo': previousLineStatus.playerTwo++,
-                        'empty': previousLineStatusStatus.empty--
-                    }
-                }
-                else { console.error(`getLineStatusMap(moveList) is Broken.`)}
-                lineStatusMap.set(lineId, updatedStatus);
-            });
-            lineStatusMap.forEach(logMapElement);
-            return lineStatusMap;
-        }
-    }
-
-
+    let currentBoardStatus = history[currentTurnNumber].boardStatus;
+    
     
     return (
         <Container
@@ -413,7 +477,7 @@ export default function ClassicGame() {
             <Paper className={classes.paper} >
                 
                 <Board 
-                    boardStatus={getBoardStatus()}
+                    boardStatus={currentBoardStatus}
                     columnHeight= {6}
                     handleColumnClick={handleColumnClick}
                     getColumnStatus={getColumnStatus}
