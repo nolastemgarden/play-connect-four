@@ -198,9 +198,11 @@ export default function ClassicGame() {
     // GAME STATE
     // The minimum required mutable state is a list of the square id's that have been claimed in the order they were claimed.  From this we can deduce the current turn number, which player made which moves, and win/draw status.
     let [history, setHistory] = useState(Array(0)); // console.log("History initialized to: " + history);
+    let [linesToStatusMap, setLinesToStatusMap] = useState(initializeLinesToStatusMap());   // Optionally, I am including the linesToStatusMap as state to save recalculating it entirely each time it is updated
+    let [gameStatus, setGameStatus] = useState('notOver');
     
-    // Optionally, I am including the linesToStatusMap as state to save recalculating it entirely each time it is updated
-    let [linesToStatusMap, setLinesToStatusMap] = useState(initializeLinesToStatusMap()); 
+    
+    
     
     
     function initializeLinesToStatusMap() {
@@ -342,8 +344,8 @@ export default function ClassicGame() {
 
 
     // STATUS GETTERS for Panel
-    function getPanelStatus(moveList = history) {
-        if (gameIsAlreadyOver()){
+    function updateGameStatus() {
+        if (gameIsOver()){
             if (playerOneWins()){
                 return "Player One Wins!";
             }
@@ -365,7 +367,7 @@ export default function ClassicGame() {
             return 1;
         }
     }
-    function gameIsAlreadyOver(moveList = history) {
+    function gameIsOver(moveList = history) {
         if (playerOneWins() || playerTwoWins() || gameDrawn()) {
             return true;  // Return true because the game is over.
         }
@@ -373,16 +375,7 @@ export default function ClassicGame() {
             return false;
         } 
     }
-    function playerOneWins(moveList = history) {
-        const playerOnesMoveList = moveList.filter((squareId, turnNumber) => turnNumber % 2 === 0);
-        
-        playerOnesMoveList.forEach(squareId => {
-            
-            
-            // if (squareIdIsInLine(squareId, lineId)) {
-
-            // }
-        });
+    function playerOneWins() {
         
 
     }
@@ -398,26 +391,30 @@ export default function ClassicGame() {
     
     // CLICK HANDLERS
     function handleColumnClick(colNumber) {
-        const moveList = history.slice();
-        console.log(`Handling Click for Column: ${colNumber} using old history: ${moveList}`)
+        let moveList = history.slice();
+        let newMove = lowestEmptySquareInColumn(colNumber);
+        console.log(`Handling Click for Column: ${colNumber} using old history: ${moveList}. Attempting move ${newMove}`)
         
-        
-        
-        
-        if (lowestEmptySquareInColumn(colNumber) === -1  || gameIsAlreadyOver()){
+        if (gameIsOver()) {
+            console.log(`Game is already over!`)
+            return -1;
+        }
+        else if (newMove === -1){
             console.log(`Clicked column is already full!`)
             return -1;
-        } 
+        }  
         else {
-            let newMove = lowestEmptySquareInColumn(colNumber);
             let updatedHistory = moveList.concat(newMove);
             console.log(`About to setHistory to updatedHistory: ${updatedHistory}`)
             setHistory(updatedHistory);
             updateLinesToStatusMap(updatedHistory);
-            
-            return 0;
         }
-    }
+        if (gameIsOver()) {
+            console.log(`Game is now over!`)
+            
+        }
+        // else {} This is where we Would find and make the Computer Move if in Play vs. Computer Mode
+     }
     function handleUndoButtonClick() {
         const shortenedHistory = history.slice(0, history.length - 1)
         console.log(`handleUndoButtonClick() removed ${history[history.length - 1]} . New Shortened history: ${shortenedHistory}`);
