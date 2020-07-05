@@ -45,12 +45,6 @@ const useStyles = makeStyles((theme) => ({
 export default function ClassicGame() {
     const classes = useStyles();
 
-    // The ONLY mutable state in the Game is a list of the square id's that have been claimed in the order they were claimed.  From this we can deduce the current turn number, which player made which moves, and win/draw status.
-    let [history, setHistory] = useState(Array(0)); // console.log("History initialized to: " + history);
-    // let [history, setHistory] = useState([2,3,4,5,1,7,6,11,33]);  // FOR DEV AND TESTING PURPOSES ONLY
-    
-    
-
     // A "Line" is defined as a set of four squareIds that together constitute a win. There is a fixed set of lineIds. 
     // There are four 'types' of Line: 'vertical', 'horizontal', 'upslash', 'downslash'
     // Each Line has a unique id. Id's are unique even across types. 
@@ -201,11 +195,16 @@ export default function ClassicGame() {
         return squaresToLinesMap;
     }
 
-
-    let linesToStatusMap = getLinesToStatusMap();
-    function getLinesToStatusMap(moveList = history) {
+    // GAME STATE
+    // The minimum required mutable state is a list of the square id's that have been claimed in the order they were claimed.  From this we can deduce the current turn number, which player made which moves, and win/draw status.
+    let [history, setHistory] = useState(Array(0)); // console.log("History initialized to: " + history);
+    
+    // Optionally, I am including the linesToStatusMap as state to save recalculating it entirely each time it is updated
+    let [linesToStatusMap, setLinesToStatusMap] = useState(initializeLinesToStatusMap()); 
+    
+    
+    function initializeLinesToStatusMap() {
         let linesToStatusMap = new Map();
-
         for (let lineId = 0; lineId < totalNumberOfLines; lineId++) {
             let status = {
                 'playerOne': 0,
@@ -214,17 +213,53 @@ export default function ClassicGame() {
             }
             linesToStatusMap.set(lineId, status);
         }
-
-
         // PRINT TO CONSOLE FOR TESTING
-        console.log(`Mapped each of the ${totalNumberOfLines} LineIds to its initial status: `)
-        linesToStatusMap.forEach(logLineIdAndStatus);
-
-        // HELPERS ONLY USED INTERNALLY 
-        function logLineIdAndStatus(status, lineId) {
+        // console.log(`Mapped each of the ${totalNumberOfLines} LineIds to its INITIAL status: `)
+        // printLinesToStatusMap(linesToStatusMap);
+        
+        return linesToStatusMap;
+    }
+    // PRINT TO CONSOLE FOR TESTING
+    function printLinesToStatusMap(map = linesToStatusMap) {
+        map.forEach((status, lineId) => {
             console.log(`LineId: ${lineId}  has status:  playerOne: ${status.playerOne}  playerTwo: ${status.playerTwo}  empty: ${status.empty}`);
-        }
-        return squaresToLinesMap;
+        });
+        return "......"
+    }
+
+    function updateLinesToStatusMap(moveList) {
+        let newestMove = moveList[moveList.length - 1]
+        let copyOfLinesToStatusMap = linesToStatusMap;
+        let playerOneMadeTheNewestMove = (moveList.length % 2 === 1);
+        console.log(`Updating LinesToStatusMap since ${(playerOneMadeTheNewestMove) ? 'Player One' : 'Player Two'} is claiming square ${newestMove}... `)
+        
+        let linesToUpdate = getSquaresToLinesMap().get(newestMove);  // This SHOULD return an array of all the ids of the lines the newMove will affect
+        
+        linesToUpdate.forEach(lineId => {
+            let currentStatus = copyOfLinesToStatusMap.get(lineId);
+            let updatedPlayerOneCount = currentStatus.playerOne;
+            let updatedPlayerTwoCount = currentStatus.playerTwo;
+            let updatedEmptyCount = (currentStatus.empty - 1);
+            if (playerOneMadeTheNewestMove) {
+                updatedPlayerOneCount++;
+            }
+            else {
+                updatedPlayerTwoCount++;
+            }
+            let updatedStatus = {
+                'playerOne': updatedPlayerOneCount,
+                'playerTwo': updatedPlayerTwoCount,
+                'empty': updatedEmptyCount
+            }
+            copyOfLinesToStatusMap.set(lineId, updatedStatus);
+            
+        });
+        // PRINT TO CONSOLE FOR TESTING
+        console.log(`Mapped each of the ${totalNumberOfLines} LineIds to its UPDATED status after adding move ${newestMove}: `)
+        printLinesToStatusMap(copyOfLinesToStatusMap);
+        
+        setLinesToStatusMap(copyOfLinesToStatusMap);
+        return 0;
     }
 
 
@@ -269,23 +304,7 @@ export default function ClassicGame() {
     function getColBySquareId(id) {
         return (Math.floor(id / squaresPerCol))
     }
-    // function getUpslashBySquareId(id) {
-    //     const row = getRowBySquareId(id);
-    //     const col = getColBySquareId(id);
-    //     return (squaresPerCol - row + col - 1)
-    // }
-    // function getDownslashBySquareId(id) {
-    //     const row = getRowBySquareId(id);
-    //     const col = getColBySquareId(id);
-    //     return (row + col)
-    // }
-
-    function allSquareIds(c = squaresPerCol, r = squaresPerRow) { // List of all squareIds to use with Array.filter()
-        const totalSquares = c * r;
-        let squareIdsList = Array(totalSquares).fill().map((_, i) => i);
-        return squareIdsList;
-    }
-
+    
 
     // STATUS GETTERS for Board and Column
     function getBoardStatus(moveList = history) {
@@ -374,102 +393,28 @@ export default function ClassicGame() {
 
     }
     
-    function getMoveCountsInEachLine(moveList = history) {
-        
-        // const moveCountsInEachLine = Array(totalNumberOfLines()).fill({
-        //     'playerOne': 0,
-        //     'playerTwo': 0
-        // });
-
-        // console.log(`Total number of Lines: ${totalNumberOfLines()} `)
-        // // console.log(`MoveCountsInEachLine:  `)
-        // // console.log(`player1: ${moveCountsInEachLine[0].playerOne}`)
-        // // console.log(`palyer2: ${moveCountsInEachLine[0].playerTwo}`)
-
-        // moveList.forEach((squareId, turnNumber) => {
-        //     const linesToUpdate = linesThatIncludeSquare(squareId);
-        //     console.log(`Number of Lines to update: ${linesToUpdate.length} `)
-        //     // if (turnNumber % 2 === 0){
-        //     //     linesToUpdate.forEach(lineId => {
-        //     //         const prev = squaresClaimedInEachLine[lineId].playerOne;
-        //     //         const increased = (prev+=1);
-        //     //         squaresClaimedInEachLine[lineId].playerOne = increased;
-        //     //     });
-        //     // }
-        //     // else if (turnNumber % 2 === 1) {
-        //     //     linesToUpdate.forEach(lineId => {
-        //     //         const prev = squaresClaimedInEachLine[lineId].playerTwo;
-        //     //         const increased = (prev += 1);
-        //     //         squaresClaimedInEachLine[lineId].playerTwo = increased;
-        //     //     });
-        //     // }
-        // });
-
-    }
     
-    
-    
-
-
-
-    
-    
-    
-
-    function numberOfVerticalLinesSquareIsIn(squareId) {
-        // Every square is in at least one and at most four VerticalLines
-        let row = getRowBySquareId(squareId)
-        let distanceFromTop = squaresPerCol - row   // Min value = 1
-        let distanceFromBottom = row + 1            // Min value = 1
-        let min = (distanceFromTop < distanceFromBottom) ? distanceFromTop : distanceFromBottom
-        return (min > 4) ? 4 : min;
-    }
-    function numberOfHorizontalLinesSquareIsIn(squareId) {
-        // Every square is in at least one and at most four HorizontalLines
-        let col = getColBySquareId(squareId)
-        let distanceFromLeft = squaresPerRow - col      // Min value = 1
-        let distanceFromRight = col + 1                 // Min value = 1
-        let min = (distanceFromLeft < distanceFromRight) ? distanceFromLeft : distanceFromRight
-        let numberOfHorizontalLinesSquareIsIn = (min > 4) ? 4 : min
-        console.log(`numberOfHorizontalLinesSquareIsIn: ${numberOfHorizontalLinesSquareIsIn}`);
-        return numberOfHorizontalLinesSquareIsIn;
-    }
-    function numberOfUpslashLinesSquareIsIn(squareId) {
-        // Each square may be in zero upto four UpslashLines
-        let col = getColBySquareId(squareId)
-        
-        
-        // let upslash = getUpslashBySquareId(squareId)
-
-        // let squaresInSlash = 
-
-        let distanceFromLeft = squaresPerRow - col      // Min value = 1
-        let distanceFromRight = col + 1                 // Min value = 1
-        let min = (distanceFromLeft < distanceFromRight) ? distanceFromLeft : distanceFromRight
-        let numberOfHorizontalLinesSquareIsIn = (min > 4) ? 4 : min
-        console.log(`numberOfHorizontalLinesSquareIsIn: ${numberOfHorizontalLinesSquareIsIn}`);
-        return numberOfHorizontalLinesSquareIsIn;
-    }
-
-
-
     
     
     // CLICK HANDLERS
     function handleColumnClick(colNumber) {
         const moveList = history.slice();
-        console.log(`Handling Click for Column: ${colNumber} using history: ${moveList}`)
+        console.log(`Handling Click for Column: ${colNumber} using old history: ${moveList}`)
         
-        getMoveCountsInEachLine();
+        
+        
         
         if (lowestEmptySquareInColumn(colNumber) === -1  || gameIsAlreadyOver()){
             console.log(`Clicked column is already full!`)
             return -1;
         } 
         else {
-            const updatedHistory = moveList.concat(lowestEmptySquareInColumn(colNumber));
+            let newMove = lowestEmptySquareInColumn(colNumber);
+            let updatedHistory = moveList.concat(newMove);
             console.log(`About to setHistory to updatedHistory: ${updatedHistory}`)
-            setHistory(updatedHistory)
+            setHistory(updatedHistory);
+            updateLinesToStatusMap(updatedHistory);
+            
             return 0;
         }
     }
@@ -487,16 +432,6 @@ export default function ClassicGame() {
 
 
 
-
-    // HELPERS for getPanelStatus()
-    function checkForDraw(board) {
-        // for (let i = 0; i < totalSquares; i++) {
-        //     if (board[i] === 'open') {
-        //         return false;
-        //     }
-        // }
-        return true;
-    }
     
     return (
         <Container
