@@ -45,18 +45,17 @@ const useStyles = makeStyles((theme) => ({
 export default function ClassicGame() {
     const classes = useStyles();
 
-    // A "Line" is defined as a set of four squareIds that together constitute a win. There is a fixed set of lineIds. 
-    // There are four 'types' of Line: 'vertical', 'horizontal', 'upslash', 'downslash'
-    // Each Line has a unique id. Id's are unique even across types. 
-    
     // Game Constants
     const squaresPerCol = 6;
     const squaresPerRow = 7;
     let totalSquares = squaresPerCol * squaresPerRow;
-    
+
+        // A "Line" is defined as an Array of four squareIds that together constitute a win. 
+        // There are four 'types' of Line: 'vertical', 'horizontal', 'upslash', 'downslash'
+        // Each Line has a unique id. Id's are unique even across types, are consecutive, and 0-indexed . 
+
     let linesPerCol = (squaresPerCol - 4 >= 0) ? (squaresPerCol - 3) : 0;
     let linesPerRow = (squaresPerRow - 4 >= 0) ? (squaresPerRow - 3) : 0;
-    
     
     let numberOfVerticalLines = linesPerCol * squaresPerRow;
     let numberOfHorizontalLines = linesPerRow * squaresPerCol;
@@ -64,218 +63,25 @@ export default function ClassicGame() {
     let numberOfDownslashLines = linesPerCol * linesPerRow;
     let totalNumberOfLines = numberOfVerticalLines + numberOfHorizontalLines + numberOfUpslashLines + numberOfDownslashLines;
     
-    // console.log(`numberOfVerticalLines: ${numberOfVerticalLines}`)
-    // console.log(`numberOfHorizontalLines: ${numberOfHorizontalLines}`)
-    // console.log(`numberOfUpslashLines: ${numberOfUpslashLines}`)
-    // console.log(`numberOfDownslashLines: ${numberOfDownslashLines}`)
-    // console.log(`totalNumberOfLines: ${totalNumberOfLines}`)
-
-    
-    // The linesToSquaresMap has one Key:Value pair for each lineId to a four-element array containing the squareIds that make up that line.
-    const linesToSquaresMap = completeLineMap();
-    function completeLineMap() {
-        let completeMap = new Map();
-
-        // In the final map there will be 69 keys (for 6x7 grid) 
-        let partialMaps = [verticalLineMap(), horizontalLineMap(), upslashLineMap(), downslashLineMap()]
-
-        partialMaps.forEach(partialMap => {
-            partialMap.forEach((squareIdList, lineId) => {
-                completeMap.set(lineId, squareIdList);
-            });
-        })
-
-        // PRINT TO CONSOLE FOR TESTING
-        // console.log(`Generated Complete Line Map with ${completeMap.size} key-value pairs.`)
-        // completeMap.forEach(logMapElements);
-
-        // HELPERS ONLY USED INTERNALLY 
-        function logMapElements(squareIdList, lineId) {
-            console.log(`Key lineId: ${lineId}   Value squareIdList: ${squareIdList}`);
-        }
-        // The following four HELPERS bear responsibility for corresponding the lists of squares to their correct final lineIds.  This is simple for vertical lines but requires consideartion of the startingId for the latter three. 
-        function verticalLineMap() {
-            let map = new Map();
-            // Vertical Lines are assigned Ids starting from Zero.
-            let currentLineId = 0;
-
-            for (let squareId = 0; squareId < totalSquares; squareId++) {
-                if (isStartOfVerticalLine(squareId)) {
-                    let first = squareId + 0;
-                    let second = squareId + 1;
-                    let third = squareId + 2;
-                    let fourth = squareId + 3;
-                    let squaresInLine = [first, second, third, fourth];
-                    map.set(currentLineId, squaresInLine);
-                    currentLineId++;
-                }
-            }
-            return map;
-        }
-        function horizontalLineMap() {
-            let map = new Map();
-            // Horizontal Lines are assigned Ids starting from numberOfVerticalLines.
-            let currentLineId = numberOfVerticalLines;
-            for (let squareId = 0; squareId < totalSquares; squareId++) {
-                if (isStartOfHorizontalLine(squareId)) {
-                    let first = squareId + (0 * squaresPerCol);
-                    let second = squareId + (1 * squaresPerCol);
-                    let third = squareId + (2 * squaresPerCol);
-                    let fourth = squareId + (3 * squaresPerCol);
-                    let squaresInLine = [first, second, third, fourth];
-                    map.set(currentLineId, squaresInLine);
-                    currentLineId++;
-                }
-            }
-            return map;
-        }
-        function upslashLineMap() {
-            let map = new Map();
-            // Upslash Lines are assigned Ids starting from numberOfVerticalLines + numberOfHorizontalLines.
-            let currentLineId = numberOfVerticalLines + numberOfHorizontalLines;
-            for (let squareId = 0; squareId < totalSquares; squareId++) {
-                if (isStartOfUpslashLine(squareId)) {
-                    let first = squareId + 0 * (squaresPerCol + 1);
-                    let second = squareId + 1 * (squaresPerCol + 1);
-                    let third = squareId + 2 * (squaresPerCol + 1);
-                    let fourth = squareId + 3 * (squaresPerCol + 1);
-                    let squaresInLine = [first, second, third, fourth];
-                    map.set(currentLineId, squaresInLine);
-                    currentLineId++;
-                }
-            }
-            return map;
-        }
-        function downslashLineMap() {
-            let map = new Map();
-            // Downslash Lines are assigned Ids starting from numberOfVerticalLines + numberOfHorizontalLines + numberOfUpslashLines.
-            let currentLineId = numberOfVerticalLines + numberOfHorizontalLines + numberOfUpslashLines;
-            for (let squareId = 0; squareId < totalSquares; squareId++) {
-                if (isStartOfDownslashLine(squareId)) {
-                    let first = squareId + 0 * (squaresPerCol - 1);
-                    let second = squareId + 1 * (squaresPerCol - 1);
-                    let third = squareId + 2 * (squaresPerCol - 1);
-                    let fourth = squareId + 3 * (squaresPerCol - 1);
-                    let squaresInLine = [first, second, third, fourth];
-                    map.set(currentLineId, squaresInLine);
-                    currentLineId++;
-                }
-            }
-            return map;
-        }
-
-        return completeMap;
-    }
-        
-    // The squaresToLinesMap has one Key:Value pair mapping each squareId to an array of the Lines that include that squarre. In classic 6x7 game this is at least 3 and at most 13 lines.
-    const squaresToLinesMap = getSquaresToLinesMap();
-    function getSquaresToLinesMap() {
-        let squaresToLinesMap = new Map();
-        for (let squareId = 0; squareId < totalSquares; squareId++) {
-            squaresToLinesMap.set(squareId, []);
-        }
-        
-        linesToSquaresMap.forEach((squareList, lineId) => {
-        // completeLineMap().forEach((squareList, lineId) => {
-            squareList.forEach(squareId => {
-                let oldLineList = squaresToLinesMap.get(squareId);
-                let updatedLineList = oldLineList.concat(lineId);
-                squaresToLinesMap.set(squareId, updatedLineList);
-            })
-        })
-        
-        // PRINT TO CONSOLE FOR TESTING
-        // console.log(`Mapped each of the ${squaresToLinesMap.size} SquareIds to the Lines that include them:`)
-        // squaresToLinesMap.forEach(logMapElements);
-
-        // HELPERS ONLY USED INTERNALLY 
-        function logMapElements(lineIdList, squareId) {
-            console.log(`SquareId: ${squareId}   includes the lines: ${lineIdList}`);
-        }
-        return squaresToLinesMap;
-    }
+    const lineIdToSquareIdsMap = getLineIdToSquareIdsMap();     // The linesToSquaresMap has one Key:Value pair for each lineId to a four-element array containing the squareIds that make up that line.
+    const squareIdToLineIdsMap = getSquareIdToLineIdsMap();     // The squaresToLinesMap has one Key:Value pair mapping each squareId to an array of the Lines that include that squarre. In classic 6x7 game this is at least 3 and at most 13 lines.
 
     // GAME STATE
-    // The minimum required mutable state is a list of the square id's that have been claimed in the order they were claimed.  From this we can deduce the current turn number, which player made which moves, and win/draw status.
-    
-    let [currentTurnNumber, setCurrentTurnNumber] = useState(0);
-    
-    let [history, setHistory] = useState(initializeHistory()); // console.log("History initialized to: " + history);
-    // let [linesToStatusMap, setLinesToStatusMap] = useState(initializeLinesToStatusMap());   // Optionally, I am including the linesToStatusMap as state to save recalculating it entirely each time it is updated
-    // let [gameStatus, setGameStatus] = useState('notOver');
-    
-    
-    function initializeHistory() {
-        // History is initially a one element array holding a "turnStatus" object consisting of 4 keys: "moveList" "boardStatus" "lineStatusMap" and a "gameStatus"
-        [{
-            "moveList": [],
-            "boardStatus": Array(totalSquares).fill('empty') "lineStatusMap" and a "gameStatus"
-        }]
-    }
-    
-    
-    function initializeLinesToStatusMap() {
-        let linesToStatusMap = new Map();
-        for (let lineId = 0; lineId < totalNumberOfLines; lineId++) {
-            let status = {
-                'playerOne': 0,
-                'playerTwo': 0,
-                'empty': 4
-            }
-            linesToStatusMap.set(lineId, status);
-        }
-        // PRINT TO CONSOLE FOR TESTING
-        // console.log(`Mapped each of the ${totalNumberOfLines} LineIds to its INITIAL status: `)
-        // printLinesToStatusMap(linesToStatusMap);
-        
-        return linesToStatusMap;
-    }
-    // PRINT TO CONSOLE FOR TESTING
-    function printLinesToStatusMap(map = linesToStatusMap) {
-        map.forEach((status, lineId) => {
-            console.log(`LineId: ${lineId}  has status:  playerOne: ${status.playerOne}  playerTwo: ${status.playerTwo}  empty: ${status.empty}`);
-        });
-        return "......"
-    }
+    let [currentTurnNumber, setCurrentTurnNumber] = useState(0);  // Use the "turnStatus" Object stored at this index in the history Array.
+    let [history, setHistory] = useState([statusOnTurnZero]); 
 
-    function updateLinesToStatusMap(moveList) {
-        let newestMove = moveList[moveList.length - 1]
-        let copyOfLinesToStatusMap = linesToStatusMap;
-        let playerOneMadeTheNewestMove = (moveList.length % 2 === 1);
-        console.log(`Updating LinesToStatusMap since ${(playerOneMadeTheNewestMove) ? 'Player One' : 'Player Two'} is claiming square ${newestMove}... `)
-        
-        let linesToUpdate = getSquaresToLinesMap().get(newestMove);  // This SHOULD return an array of all the ids of the lines the newMove will affect
-        
-        linesToUpdate.forEach(lineId => {
-            let currentStatus = copyOfLinesToStatusMap.get(lineId);
-            let updatedPlayerOneCount = currentStatus.playerOne;
-            let updatedPlayerTwoCount = currentStatus.playerTwo;
-            let updatedEmptyCount = (currentStatus.empty - 1);
-            if (playerOneMadeTheNewestMove) {
-                updatedPlayerOneCount++;
-            }
-            else {
-                updatedPlayerTwoCount++;
-            }
-            let updatedStatus = {
-                'playerOne': updatedPlayerOneCount,
-                'playerTwo': updatedPlayerTwoCount,
-                'empty': updatedEmptyCount
-            }
-            copyOfLinesToStatusMap.set(lineId, updatedStatus);
-            
-        });
-        // PRINT TO CONSOLE FOR TESTING
-        console.log(`Mapped each of the ${totalNumberOfLines} LineIds to its UPDATED status after adding move ${newestMove}: `)
-        printLinesToStatusMap(copyOfLinesToStatusMap);
-        
-        setLinesToStatusMap(copyOfLinesToStatusMap);
-        return 0;
+    
+    // LOWEST LEVEL SQUARE-ROW-COL HELPERS
+    function getRowBySquareId(id) {
+        return (id % squaresPerCol);
     }
-
-
-    // BOOLEAN helpers  
-    // Currently there is only a Square.js functional Component, however if I defined a Square Class I would think that I could turn these functions that take squareId as a parameter and turn them into something that 'reads better' like Square.isStartOfVerticalLine() written on the Square object so that it has built in access to the relevant squareId and can be used in a no-parameter fashion. ??? 
+    function getColBySquareId(id) {
+        return (Math.floor(id / squaresPerCol))
+    }
+    // function getSquareIdByRowCol(row, col) { return (col * squaresPerCol + row);  }
+    
+    
+    // FIRST level BOOLEAN LINE helpers             // Currently there is only a Square.js functional Component, however if I defined a Square Class I would think that I could turn these functions that take squareId as a parameter and turn them into something that 'reads better' like Square.isStartOfVerticalLine() written on the Square object so that it has built in access to the relevant squareId and can be used in a no-parameter fashion. ??? 
     function isStartOfVerticalLine(squareId) {
         const rowNumber = getRowBySquareId(squareId);
         return (squaresPerCol - rowNumber >= 4);
@@ -303,18 +109,6 @@ export default function ClassicGame() {
         return (isEndOfVerticalLine(squareId) && isStartOfHorizontalLine(squareId));
     }
 
-    // Low-level SQUARE helpers.  rowNumbers, colNumbers, upslashNumbers, and downslashNumbers are all 0-indexed
-    // Each SQUARE belongs to exactly one row, one col, one upslash and one downslash.
-    // Each SQUARE belongs to varying numbers of Lines.
-    function getSquareIdByRowCol(row, col) {
-        return (col * squaresPerCol + row);
-    }
-    function getRowBySquareId(id) {
-        return (id % squaresPerCol);
-    }
-    function getColBySquareId(id) {
-        return (Math.floor(id / squaresPerCol))
-    }
     
 
     // STATUS GETTERS for Board and Column
@@ -400,6 +194,8 @@ export default function ClassicGame() {
     
     // CLICK HANDLERS
     function handleColumnClick(colNumber) {
+        
+        
         let moveList = history.slice();
         let newMove = lowestEmptySquareInColumn(colNumber);
         console.log(`Handling Click for Column: ${colNumber} using old history: ${moveList}. Attempting move ${newMove}`)
@@ -435,7 +231,176 @@ export default function ClassicGame() {
         setHistory(empty);
     }
 
+    
+    
+    // PRINT TO CONSOLE FOR TESTING
+    function logMapElement(value, key) {
+        console.log(`Key lineId: ${key}   Value squareIdList: ${value}`);
+    }
+    function printLinesToStatusMap(map) {
+        map.forEach((status, lineId) => {
+            console.log(`LineId: ${lineId}  has status:  playerOne: ${status.playerOne}  playerTwo: ${status.playerTwo}  empty: ${status.empty}`);
+        });
+    }
+    
+    
+    // STATE INITIALIZING and UPDATING
+    let statusOnTurnZero = {
+        "turnNumber": 0,
+        "moveList": Array(turnNumber),
+        "boardStatus": Array(totalSquares).fill('empty'),
+        "lineStatusMap": getLineStatusMap(moveList),
+        "gameStatus": 'playerOneToMove'
+    }
 
+
+
+    // MAP MAKING FUNCTIONS
+    function getLineIdToSquareIdsMap() {
+        let completeMap = new Map();
+        let partialMaps = [verticalLineMap(), horizontalLineMap(), upslashLineMap(), downslashLineMap()]
+
+        partialMaps.forEach(partialMap => {
+            partialMap.forEach((squareIdList, lineId) => {
+                completeMap.set(lineId, squareIdList);
+            });
+        })
+        console.log(`Generated Map of LineIds to the four SquareIds in each. There are ${completeMap.size} LineIds in the Map.`)
+        // completeMap.forEach(logMapElement);
+        // The following four HELPERS bear responsibility for corresponding the lists of squares to their correct final lineIds.  This is simple for vertical lines but requires consideartion of the startingId for the latter three. 
+        function verticalLineMap() {
+            let map = new Map();
+            // Vertical Lines are assigned Ids starting from Zero.
+            let currentLineId = 0;
+
+            for (let squareId = 0; squareId < totalSquares; squareId++) {
+                if (isStartOfVerticalLine(squareId)) {
+                    let first = squareId + 0;
+                    let second = squareId + 1;
+                    let third = squareId + 2;
+                    let fourth = squareId + 3;
+                    let squaresInLine = [first, second, third, fourth];
+                    map.set(currentLineId, squaresInLine);
+                    currentLineId++;
+                }
+            }
+            return map;
+        }
+        function horizontalLineMap() {
+            let map = new Map();
+            // Horizontal Lines are assigned Ids starting from numberOfVerticalLines.
+            let currentLineId = numberOfVerticalLines;
+            for (let squareId = 0; squareId < totalSquares; squareId++) {
+                if (isStartOfHorizontalLine(squareId)) {
+                    let first = squareId + (0 * squaresPerCol);
+                    let second = squareId + (1 * squaresPerCol);
+                    let third = squareId + (2 * squaresPerCol);
+                    let fourth = squareId + (3 * squaresPerCol);
+                    let squaresInLine = [first, second, third, fourth];
+                    map.set(currentLineId, squaresInLine);
+                    currentLineId++;
+                }
+            }
+            return map;
+        }
+        function upslashLineMap() {
+            let map = new Map();
+            // Upslash Lines are assigned Ids starting from numberOfVerticalLines + numberOfHorizontalLines.
+            let currentLineId = numberOfVerticalLines + numberOfHorizontalLines;
+            for (let squareId = 0; squareId < totalSquares; squareId++) {
+                if (isStartOfUpslashLine(squareId)) {
+                    let first = squareId + 0 * (squaresPerCol + 1);
+                    let second = squareId + 1 * (squaresPerCol + 1);
+                    let third = squareId + 2 * (squaresPerCol + 1);
+                    let fourth = squareId + 3 * (squaresPerCol + 1);
+                    let squaresInLine = [first, second, third, fourth];
+                    map.set(currentLineId, squaresInLine);
+                    currentLineId++;
+                }
+            }
+            return map;
+        }
+        function downslashLineMap() {
+            let map = new Map();
+            // Downslash Lines are assigned Ids starting from numberOfVerticalLines + numberOfHorizontalLines + numberOfUpslashLines.
+            let currentLineId = numberOfVerticalLines + numberOfHorizontalLines + numberOfUpslashLines;
+            for (let squareId = 0; squareId < totalSquares; squareId++) {
+                if (isStartOfDownslashLine(squareId)) {
+                    let first = squareId + 0 * (squaresPerCol - 1);
+                    let second = squareId + 1 * (squaresPerCol - 1);
+                    let third = squareId + 2 * (squaresPerCol - 1);
+                    let fourth = squareId + 3 * (squaresPerCol - 1);
+                    let squaresInLine = [first, second, third, fourth];
+                    map.set(currentLineId, squaresInLine);
+                    currentLineId++;
+                }
+            }
+            return map;
+        }
+        return completeMap;
+    }
+    function getSquareIdToLineIdsMap() {
+        let squaresToLinesMap = new Map();
+        for (let squareId = 0; squareId < totalSquares; squareId++) {
+            squaresToLinesMap.set(squareId, []);
+        }
+        linesToSquaresMap.forEach((squaresList, lineId) => {
+            squaresList.forEach(squareId => {
+                squaresToLinesMap.set(squareId, squaresToLinesMap.get(squareId).concat(lineId));
+            })
+        })
+        console.log(`Mapped each of the ${totalSquares} SquareIds to the set of all Lines that include it.`)
+        // squaresToLinesMap.forEach(logMapElement);
+        return squaresToLinesMap;
+    }
+    function initialLineStatusMap() {
+        let lineStatusMap = new Map();
+        for (let lineId = 0; lineId < totalNumberOfLines; lineId++) {
+            let status = {
+                'playerOne': 0,
+                'playerTwo': 0,
+                'empty': 4
+            }
+            lineStatusMap.set(lineId, status);
+        }
+        return lineStatusMap;
+    }
+    function getLineStatusMap(moveList) {
+        let turnNumber = moveList.length;   // turnNumbers are 0-indexed! When it is turn 0 there is still one status object in the history
+        if (turnNumber === 0) {
+            return initialLineStatusMap();
+        }
+        else {
+            let lineStatusMap = history[turnNumber - 1].lineStatusMap;  // Start with the Map from the PREVIOUS turn
+            let mostRecentPlayer = (turnNumber % 2 === 0) ? "playerOne" : "playerTwo";
+            let mostRecentSquareClaimed = moveList[turnNumber-1];
+            console.log(`Getting lineStatusMap for turnNumber ${turnNumber}. ${mostRecentPlayer} just claimed square ${mostRecentSquareClaimed}... `)
+
+            let linesToUpdate = squareIdToLineIdsMap.get(mostRecentSquareClaimed);
+            linesToUpdate.forEach(lineId => {
+                let previousLineStatus = lineStatusMap.get(lineId);
+                let updatedStatus;
+                if (mostRecentPlayer === "playerOne") {
+                    updatedStatus = {
+                        'playerOne': previousLineStatus.playerOne++,
+                        'playerTwo': previousLineStatus.playerTwo,
+                        'empty': previousLineStatusStatus.empty--
+                    }
+                }
+                else if (mostRecentPlayer === "playerTwo") {
+                    updatedStatus = {
+                        'playerOne': previousLineStatus.playerOne,
+                        'playerTwo': previousLineStatus.playerTwo++,
+                        'empty': previousLineStatusStatus.empty--
+                    }
+                }
+                else { console.error(`getLineStatusMap(moveList) is Broken.`)}
+                lineStatusMap.set(lineId, updatedStatus);
+            });
+            lineStatusMap.forEach(logMapElement);
+            return lineStatusMap;
+        }
+    }
 
 
     
