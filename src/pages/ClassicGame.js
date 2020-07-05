@@ -197,12 +197,21 @@ export default function ClassicGame() {
 
     // GAME STATE
     // The minimum required mutable state is a list of the square id's that have been claimed in the order they were claimed.  From this we can deduce the current turn number, which player made which moves, and win/draw status.
-    let [history, setHistory] = useState(Array(0)); // console.log("History initialized to: " + history);
-    let [linesToStatusMap, setLinesToStatusMap] = useState(initializeLinesToStatusMap());   // Optionally, I am including the linesToStatusMap as state to save recalculating it entirely each time it is updated
-    let [gameStatus, setGameStatus] = useState('notOver');
+    
+    let [currentTurnNumber, setCurrentTurnNumber] = useState(0);
+    
+    let [history, setHistory] = useState(initializeHistory()); // console.log("History initialized to: " + history);
+    // let [linesToStatusMap, setLinesToStatusMap] = useState(initializeLinesToStatusMap());   // Optionally, I am including the linesToStatusMap as state to save recalculating it entirely each time it is updated
+    // let [gameStatus, setGameStatus] = useState('notOver');
     
     
-    
+    function initializeHistory() {
+        // History is initially a one element array holding a "turnStatus" object consisting of 4 keys: "moveList" "boardStatus" "lineStatusMap" and a "gameStatus"
+        [{
+            "moveList": [],
+            "boardStatus": Array(totalSquares).fill('empty') "lineStatusMap" and a "gameStatus"
+        }]
+    }
     
     
     function initializeLinesToStatusMap() {
