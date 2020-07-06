@@ -42,29 +42,47 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-export default function ClassicGame() {
+export default function ClassicGame(props) {
     const classes = useStyles();
 
     // Game Constants
-    const squaresPerCol = 6;
-    const squaresPerRow = 7;
+    const squaresPerCol = props.squaresPerCol;
+    const squaresPerRow = props.squaresPerRow;
     let totalSquares = squaresPerCol * squaresPerRow;
-
-        // A "Line" is defined as an Array of four squareIds that together constitute a win. 
-        // There are four 'types' of Line: 'vertical', 'horizontal', 'upslash', 'downslash'
-        // Each Line has a unique id. Id's are unique even across types, are consecutive, and 0-indexed . 
 
     let linesPerCol = (squaresPerCol - 4 >= 0) ? (squaresPerCol - 3) : 0;
     let linesPerRow = (squaresPerRow - 4 >= 0) ? (squaresPerRow - 3) : 0;
-    
+
     let numberOfVerticalLines = linesPerCol * squaresPerRow;
     let numberOfHorizontalLines = linesPerRow * squaresPerCol;
     let numberOfUpslashLines = linesPerCol * linesPerRow;
     let numberOfDownslashLines = linesPerCol * linesPerRow;
     let totalNumberOfLines = numberOfVerticalLines + numberOfHorizontalLines + numberOfUpslashLines + numberOfDownslashLines;
+
+    const lineIdToSquareIdsMap = props.lineIdToSquareIdsMap;     // The linesToSquaresMap has one Key:Value pair for each lineId to a four-element array containing the squareIds that make up that line.
+    const squareIdToLineIdsMap = props.squareIdToLineIdsMap;     // The squaresToLinesMap has one Key:Value pair mapping each squareId to an array of the Lines that include that squarre. In classic 6x7 game this is at least 3 and at most 13 lines.
+
+
+    // // Game Constants
+    // const squaresPerCol = 6;
+    // const squaresPerRow = 7;
+    // let totalSquares = squaresPerCol * squaresPerRow;
+
+    //     // A "Line" is defined as an Array of four squareIds that together constitute a win. 
+    //     // There are four 'types' of Line: 'vertical', 'horizontal', 'upslash', 'downslash'
+    //     // Each Line has a unique id. Id's are unique even across types, are consecutive, and 0-indexed . 
+
+    // let linesPerCol = (squaresPerCol - 4 >= 0) ? (squaresPerCol - 3) : 0;
+    // let linesPerRow = (squaresPerRow - 4 >= 0) ? (squaresPerRow - 3) : 0;
     
-    const lineIdToSquareIdsMap = getLineIdToSquareIdsMap();     // The linesToSquaresMap has one Key:Value pair for each lineId to a four-element array containing the squareIds that make up that line.
-    const squareIdToLineIdsMap = getSquareIdToLineIdsMap();     // The squaresToLinesMap has one Key:Value pair mapping each squareId to an array of the Lines that include that squarre. In classic 6x7 game this is at least 3 and at most 13 lines.
+    // let numberOfVerticalLines = linesPerCol * squaresPerRow;
+    // let numberOfHorizontalLines = linesPerRow * squaresPerCol;
+    // let numberOfUpslashLines = linesPerCol * linesPerRow;
+    // let numberOfDownslashLines = linesPerCol * linesPerRow;
+    // let totalNumberOfLines = numberOfVerticalLines + numberOfHorizontalLines + numberOfUpslashLines + numberOfDownslashLines;
+    
+    // const lineIdToSquareIdsMap = getLineIdToSquareIdsMap();     // The linesToSquaresMap has one Key:Value pair for each lineId to a four-element array containing the squareIds that make up that line.
+    // const squareIdToLineIdsMap = getSquareIdToLineIdsMap();     // The squaresToLinesMap has one Key:Value pair mapping each squareId to an array of the Lines that include that squarre. In classic 6x7 game this is at least 3 and at most 13 lines.
 
     
     // STATE INITIALIZING and UPDATING helpers
@@ -194,7 +212,7 @@ export default function ClassicGame() {
         // TESTING
         console.log(`Testing getLineStatusMap for turnNumber ${turnNumber}.`)
         console.log(`mostRecentPlayer: ${mostRecentPlayer} just claimed square ${mostRecentSquareClaimed}`)
-        printLinesToStatusMap(updatedLineStatusMap)
+        // printLinesToStatusMap(updatedLineStatusMap)
         return updatedLineStatusMap;
     }
     function getGameStatus(turnNumber, lineStatusMap) {
@@ -204,23 +222,23 @@ export default function ClassicGame() {
         
         // There  are FIVE posssible Game Status values.  THREE cases where game is over.
         if (playerOneWins(lineStatusMap)){
-            console.log("Player One Wins!")
+            // console.log("Player One Wins!")
             return 'playerOneWins';
         }
         else if (playerTwoWins(lineStatusMap)) {
-            console.log("Player Two Wins!")
+            // console.log("Player Two Wins!")
             return 'playerTwoWins';
         }
         else if (gameDrawn(lineStatusMap)) {
-            console.log("Game Over. Draw.")
+            // console.log("Game Over. Draw.")
             return 'gameDrawn';
         }
         else if (playerOneToMove(turnNumber) === true) {
-            console.log("Player One to Move.")
+            // console.log("Player One to Move.")
             return 'playerOneToMove';
         }
         else if (playerOneToMove(turnNumber) === false) {
-            console.log("Player Two to Move.")
+            // console.log("Player Two to Move.")
             return 'playerTwoToMove';
         }
         else {
@@ -351,106 +369,106 @@ export default function ClassicGame() {
     }
 
 
-    // MAP MAKING FUNCTIONS
-    function getLineIdToSquareIdsMap() {
-        let completeMap = new Map();
-        let partialMaps = [verticalLineMap(), horizontalLineMap(), upslashLineMap(), downslashLineMap()]
+    // // MAP MAKING FUNCTIONS
+    // function getLineIdToSquareIdsMap() {
+    //     let completeMap = new Map();
+    //     let partialMaps = [verticalLineMap(), horizontalLineMap(), upslashLineMap(), downslashLineMap()]
 
-        partialMaps.forEach(partialMap => {
-            partialMap.forEach((squareIdList, lineId) => {
-                completeMap.set(lineId, squareIdList);
-            });
-        })
-        // CONFUSING point: For now I have just silenced the following console.log because it runs everytime handleColumnClick is called.  This means the map is being recreated from scratch each turn of the game unnecesarily. Perhaps I could solve this by moving the entire ClassicGame() inside a wrapper component that is strictly for holding complex CONSTANTS that ClassGame uses but only needs to compute once such as the Maps.
-        // console.log(`Generated Map of LineIds to the four SquareIds in each. There are ${completeMap.size} LineIds in the Map.`)
-        // completeMap.forEach(logMapElement);
-        // The following four HELPERS bear responsibility for corresponding the lists of squares to their correct final lineIds.  This is simple for vertical lines but requires consideartion of the startingId for the latter three. 
-        function verticalLineMap() {
-            let map = new Map();
-            // Vertical Lines are assigned Ids starting from Zero.
-            let currentLineId = 0;
+    //     partialMaps.forEach(partialMap => {
+    //         partialMap.forEach((squareIdList, lineId) => {
+    //             completeMap.set(lineId, squareIdList);
+    //         });
+    //     })
+    //     // CONFUSING point: For now I have just silenced the following console.log because it runs everytime handleColumnClick is called.  This means the map is being recreated from scratch each turn of the game unnecesarily. Perhaps I could solve this by moving the entire ClassicGame() inside a wrapper component that is strictly for holding complex CONSTANTS that ClassGame uses but only needs to compute once such as the Maps.
+    //     // console.log(`Generated Map of LineIds to the four SquareIds in each. There are ${completeMap.size} LineIds in the Map.`)
+    //     // completeMap.forEach(logMapElement);
+    //     // The following four HELPERS bear responsibility for corresponding the lists of squares to their correct final lineIds.  This is simple for vertical lines but requires consideartion of the startingId for the latter three. 
+    //     function verticalLineMap() {
+    //         let map = new Map();
+    //         // Vertical Lines are assigned Ids starting from Zero.
+    //         let currentLineId = 0;
 
-            for (let squareId = 0; squareId < totalSquares; squareId++) {
-                if (isStartOfVerticalLine(squareId)) {
-                    let first = squareId + 0;
-                    let second = squareId + 1;
-                    let third = squareId + 2;
-                    let fourth = squareId + 3;
-                    let squaresInLine = [first, second, third, fourth];
-                    map.set(currentLineId, squaresInLine);
-                    currentLineId++;
-                }
-            }
-            return map;
-        }
-        function horizontalLineMap() {
-            let map = new Map();
-            // Horizontal Lines are assigned Ids starting from numberOfVerticalLines.
-            let currentLineId = numberOfVerticalLines;
-            for (let squareId = 0; squareId < totalSquares; squareId++) {
-                if (isStartOfHorizontalLine(squareId)) {
-                    let first = squareId + (0 * squaresPerCol);
-                    let second = squareId + (1 * squaresPerCol);
-                    let third = squareId + (2 * squaresPerCol);
-                    let fourth = squareId + (3 * squaresPerCol);
-                    let squaresInLine = [first, second, third, fourth];
-                    map.set(currentLineId, squaresInLine);
-                    currentLineId++;
-                }
-            }
-            return map;
-        }
-        function upslashLineMap() {
-            let map = new Map();
-            // Upslash Lines are assigned Ids starting from numberOfVerticalLines + numberOfHorizontalLines.
-            let currentLineId = numberOfVerticalLines + numberOfHorizontalLines;
-            for (let squareId = 0; squareId < totalSquares; squareId++) {
-                if (isStartOfUpslashLine(squareId)) {
-                    let first = squareId + 0 * (squaresPerCol + 1);
-                    let second = squareId + 1 * (squaresPerCol + 1);
-                    let third = squareId + 2 * (squaresPerCol + 1);
-                    let fourth = squareId + 3 * (squaresPerCol + 1);
-                    let squaresInLine = [first, second, third, fourth];
-                    map.set(currentLineId, squaresInLine);
-                    currentLineId++;
-                }
-            }
-            return map;
-        }
-        function downslashLineMap() {
-            let map = new Map();
-            // Downslash Lines are assigned Ids starting from numberOfVerticalLines + numberOfHorizontalLines + numberOfUpslashLines.
-            let currentLineId = numberOfVerticalLines + numberOfHorizontalLines + numberOfUpslashLines;
-            for (let squareId = 0; squareId < totalSquares; squareId++) {
-                if (isStartOfDownslashLine(squareId)) {
-                    let first = squareId + 0 * (squaresPerCol - 1);
-                    let second = squareId + 1 * (squaresPerCol - 1);
-                    let third = squareId + 2 * (squaresPerCol - 1);
-                    let fourth = squareId + 3 * (squaresPerCol - 1);
-                    let squaresInLine = [first, second, third, fourth];
-                    map.set(currentLineId, squaresInLine);
-                    currentLineId++;
-                }
-            }
-            return map;
-        }
-        return completeMap;
-    }
-    function getSquareIdToLineIdsMap() {
-        let squaresToLinesMap = new Map();
-        for (let squareId = 0; squareId < totalSquares; squareId++) {
-            squaresToLinesMap.set(squareId, []);
-        }
-        lineIdToSquareIdsMap.forEach((squaresList, lineId) => {
-            squaresList.forEach(squareId => {
-                squaresToLinesMap.set(squareId, squaresToLinesMap.get(squareId).concat(lineId));
-            })
-        })
-        // CONFUSING point: For now I have just silenced the following console.log because it runs everytime handleColumnClick is called.  This means the map is being recreated from scratch each turn of the game unnecesarily. Perhaps I could solve this by moving the entire ClassicGame() inside a wrapper component that is strictly for holding complex CONSTANTS that ClassGame uses but only needs to compute once such as the Maps.
-        // console.log(`Mapped each of the ${totalSquares} SquareIds to the set of all Lines that include it.`)
-        // squaresToLinesMap.forEach(logMapElement);
-        return squaresToLinesMap;
-    }
+    //         for (let squareId = 0; squareId < totalSquares; squareId++) {
+    //             if (isStartOfVerticalLine(squareId)) {
+    //                 let first = squareId + 0;
+    //                 let second = squareId + 1;
+    //                 let third = squareId + 2;
+    //                 let fourth = squareId + 3;
+    //                 let squaresInLine = [first, second, third, fourth];
+    //                 map.set(currentLineId, squaresInLine);
+    //                 currentLineId++;
+    //             }
+    //         }
+    //         return map;
+    //     }
+    //     function horizontalLineMap() {
+    //         let map = new Map();
+    //         // Horizontal Lines are assigned Ids starting from numberOfVerticalLines.
+    //         let currentLineId = numberOfVerticalLines;
+    //         for (let squareId = 0; squareId < totalSquares; squareId++) {
+    //             if (isStartOfHorizontalLine(squareId)) {
+    //                 let first = squareId + (0 * squaresPerCol);
+    //                 let second = squareId + (1 * squaresPerCol);
+    //                 let third = squareId + (2 * squaresPerCol);
+    //                 let fourth = squareId + (3 * squaresPerCol);
+    //                 let squaresInLine = [first, second, third, fourth];
+    //                 map.set(currentLineId, squaresInLine);
+    //                 currentLineId++;
+    //             }
+    //         }
+    //         return map;
+    //     }
+    //     function upslashLineMap() {
+    //         let map = new Map();
+    //         // Upslash Lines are assigned Ids starting from numberOfVerticalLines + numberOfHorizontalLines.
+    //         let currentLineId = numberOfVerticalLines + numberOfHorizontalLines;
+    //         for (let squareId = 0; squareId < totalSquares; squareId++) {
+    //             if (isStartOfUpslashLine(squareId)) {
+    //                 let first = squareId + 0 * (squaresPerCol + 1);
+    //                 let second = squareId + 1 * (squaresPerCol + 1);
+    //                 let third = squareId + 2 * (squaresPerCol + 1);
+    //                 let fourth = squareId + 3 * (squaresPerCol + 1);
+    //                 let squaresInLine = [first, second, third, fourth];
+    //                 map.set(currentLineId, squaresInLine);
+    //                 currentLineId++;
+    //             }
+    //         }
+    //         return map;
+    //     }
+    //     function downslashLineMap() {
+    //         let map = new Map();
+    //         // Downslash Lines are assigned Ids starting from numberOfVerticalLines + numberOfHorizontalLines + numberOfUpslashLines.
+    //         let currentLineId = numberOfVerticalLines + numberOfHorizontalLines + numberOfUpslashLines;
+    //         for (let squareId = 0; squareId < totalSquares; squareId++) {
+    //             if (isStartOfDownslashLine(squareId)) {
+    //                 let first = squareId + 0 * (squaresPerCol - 1);
+    //                 let second = squareId + 1 * (squaresPerCol - 1);
+    //                 let third = squareId + 2 * (squaresPerCol - 1);
+    //                 let fourth = squareId + 3 * (squaresPerCol - 1);
+    //                 let squaresInLine = [first, second, third, fourth];
+    //                 map.set(currentLineId, squaresInLine);
+    //                 currentLineId++;
+    //             }
+    //         }
+    //         return map;
+    //     }
+    //     return completeMap;
+    // }
+    // function getSquareIdToLineIdsMap() {
+    //     let squaresToLinesMap = new Map();
+    //     for (let squareId = 0; squareId < totalSquares; squareId++) {
+    //         squaresToLinesMap.set(squareId, []);
+    //     }
+    //     lineIdToSquareIdsMap.forEach((squaresList, lineId) => {
+    //         squaresList.forEach(squareId => {
+    //             squaresToLinesMap.set(squareId, squaresToLinesMap.get(squareId).concat(lineId));
+    //         })
+    //     })
+    //     // CONFUSING point: For now I have just silenced the following console.log because it runs everytime handleColumnClick is called.  This means the map is being recreated from scratch each turn of the game unnecesarily. Perhaps I could solve this by moving the entire ClassicGame() inside a wrapper component that is strictly for holding complex CONSTANTS that ClassGame uses but only needs to compute once such as the Maps.
+    //     console.log(`Mapped each of the ${totalSquares} SquareIds to the set of all Lines that include it.`)
+    //     // squaresToLinesMap.forEach(logMapElement);
+    //     return squaresToLinesMap;
+    // }
     function initialLineStatusMap() {
         let lineStatusMap = new Map();
         for (let lineId = 0; lineId < totalNumberOfLines; lineId++) {
