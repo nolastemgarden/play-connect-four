@@ -11,6 +11,7 @@ import {
 
 // MATERIAL-UI COMPONENTS
 import Container from '@material-ui/core/Container';
+import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import AppBar from '@material-ui/core/AppBar';
 import Button from '@material-ui/core/Button';
@@ -31,23 +32,38 @@ const useStyles = makeStyles((theme) => ({
         width: '100vw',
         backgroundColor: theme.palette.primary.main, // Matches Logo Background
         display: 'flex',
-        flexDirection: 'row',
+        // flexDirection: 'row',
         justifyContent: 'center',
-        color: '#fff',
+        // color: '#fff',
     },
-    navbarContainer: {
-        width: '100vw',
-        backgroundColor: theme.palette.primary.main, // Matches Logo Background
+    container: {
+        // border: 'solid red 1px',
+        // width: '100%',
+        // backgroundColor: theme.palette.primary.main, // Matches Logo Background
         display: 'flex',
         flexDirection: 'row',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        alignItems: 'center'
 
+    },
+    spacer: {
+        // border: 'solid red 1px',
+        width: '5%',
     },
     brandName: {
 
     },
+    menu: {
+        // border: 'solid red 1px',
+        width: '5%',
+        marginRight: '1%',
+        // alignSelf: 'end',
+        // justifySelf: 'right'
+    },
     menuButton: {
-        color: theme.palette.common.white
+        color: theme.palette.common.white,
+        // marginRight: 0
+        // justifySelf: 'end'
     }
 
 }));
@@ -60,7 +76,9 @@ export default function Navbar(props) {
             className={classes.navbar}
             elevation={2}
         >
-            <Container className={classes.navbarContainer} maxWidth='md'>
+            <Container className={classes.container} maxWidth='md'>
+
+                <Box className={classes.spacer}/>
 
                 <Typography
                     className={classes.brandName}
@@ -92,7 +110,7 @@ function SimpleMenu() {
     };
 
     return (
-        <div>
+        <Box className={classes.menu}>
             <Button 
                 className={classes.menuButton} 
                 aria-controls="simple-menu" 
@@ -132,6 +150,6 @@ function SimpleMenu() {
                     Play with Math Fact Practice
                 </MenuItem>
             </Menu>
-        </div>
+        </Box >
     );
 }
