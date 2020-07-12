@@ -73,14 +73,14 @@ export default function WelcomePage() {
                 </Typography>
                 <Typography variant='body1' className={classes.paragraph}>
                     I developed the first version of this game in 2018 while I was working with an afterschool program in New Orleans 
-                    called College Track.  The first version of Math Fact Connect Four featured questions about the Rules of Exponents 
+                    called <a href="https://collegetrack.org/communities/new-orleans-la/">College Track</a>.  The first version of Math Fact Connect Four featured questions about the Rules of Exponents 
                     printed on laminated sheets of paper and tacked to a wooden grid that hung at the front of the classroom. 
                     The game was very popular with the students and they requested that I make more versions of it so that they 
                     could use the connect four grid to practice more than just the rules of exponents.
                 </Typography>
                 <Typography variant='body1' className={classes.paragraph}>
-                    I was motivated by their enthusiastic response, but making the laminated cards was tedious, time consuming, and 
-                    imposed the limitation that the game could only be used by one class at a time.  Around the same time I was beginning to teach myself 
+                    I was motivated by their enthusiastic response, but making the laminated cards was tedious and 
+                    it limitted the game to being used by one class at a time.  Around the same time I was beginning to teach myself 
                     web development, so I decided that it would be a better use of my time to make an online version of the game 
                     rather than more laminated-card versions.  It would be good programming practice, I thought, and also would enable the game 
                     to reach students beyond just my classes.   
