@@ -12,7 +12,10 @@ import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
 const useStyles = makeStyles((theme) => ({
     board: {
-        border: 'solid red 1px',
+        // border: 'solid red 1px',
+        // minWidth: '150px',
+        // minHeight: '150px',
+
         // margin: '2rem',
         width: '100%',
         height: '100%',
@@ -23,6 +26,7 @@ const useStyles = makeStyles((theme) => ({
 
 
 // The Board takes data on 42 squares and renders a collection of 7 Columns.
+
 export default function Board(props) {
     const classes = useStyles();
     

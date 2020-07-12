@@ -14,8 +14,9 @@ import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
 const useStyles = makeStyles((theme) => ({
     square: {
-        width: '100px',
-        height: '100px',
+        
+        width: '100%',
+        height: '85%',
         backgroundColor: theme.palette.primary.main,
         display: 'flex',
         alignItems: 'center',
