@@ -36,7 +36,7 @@ const useStyles = makeStyles((theme) => ({
     root: {
         height: '100%',
         width: '100%',
-        
+        backgroundColor: theme.palette.primary.light,
         // minWidth: '400px',
         // backgroundColor: theme.palette.common.white,
         // backgroundColor: theme.palette.primary.light,
@@ -218,7 +218,6 @@ export default function ClassicGameWrapper() {
 
     return (
         <Box className={classes.root}>
-            <Navbar pageTitle={"Classic Connect Four"} />
             
             <ClassicGame
                 squaresPerCol={squaresPerCol}
