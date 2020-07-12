@@ -17,6 +17,9 @@ const useStyles = makeStyles((theme) => ({
         flexDirection: 'column-reverse',
         alignItems: 'center',
         justifyContent: 'center',
+
+        width: '100%',
+        height: '100%',
     },
 }));
 
