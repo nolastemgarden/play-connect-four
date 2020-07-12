@@ -37,17 +37,17 @@ import {
 
 const useStyles = makeStyles((theme) => ({
     root: {
-        height: 'auto',
-        minHeight: '100vh',
+        height: '100vh',
         width: '100vw',
-        minWidth: '400px',
-        
+        // backgroundColor: theme.palette.primary.main,
+        // backgroundColor: theme.palette.player1,
         // backgroundColor: theme.palette.common.white,
-        // backgroundColor: theme.palette.primary.light,
-        backgroundColor: '#b3e5fc',
+        backgroundColor: theme.palette.primary.light,
+        // backgroundColor: '#b3e5fc',
         display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'top',
+        flexDirection: 'column',
+        justifyContent: 'top',
+        alignItems: 'center',
 
     },
 
@@ -57,6 +57,8 @@ const useStyles = makeStyles((theme) => ({
 
 export default function App() {
     const classes = useStyles();
+
+    console.log(`theme ${theme.palette.primary.main}`)
     
     return (
         <React.Fragment>
@@ -70,7 +72,7 @@ export default function App() {
                             </Route>
 
                             <Route path="/classic_mode">
-                                
+                                <Navbar pageTitle={"Classic Connect Four"} />
                                 <ClassicGameWrapper />
 
                             </Route>

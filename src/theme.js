@@ -12,12 +12,11 @@ import red from '@material-ui/core/colors/red';
 const theme = createMuiTheme({
     palette: {
         primary: {
-            light: '#b3e5fc',
-            main: '#2962ff',
-            dark: '#0039cb',
-        },
-        player1: red,
-        player2: yellow,
+            light: '#b0ffff', 
+            main: '#4AC9FD',
+            dark: '#1133f4',
+            contrastText: '#fff'
+        }
     },
     status: {
         danger: 'orange',
@@ -28,4 +27,5 @@ const theme = createMuiTheme({
 
 });
 
-export default responsiveFontSizes(theme);
+// export default responsiveFontSizes(theme);
+export default theme;
