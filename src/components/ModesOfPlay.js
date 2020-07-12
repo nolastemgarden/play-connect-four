@@ -65,8 +65,8 @@ const useStyles = makeStyles((theme) => ({
         flexDirection: 'column',
     },
     paragraph: {
-        textIndent: '2rem',
-        paddingBottom: '1rem',
+        // textIndent: '2rem',
+        paddingBottom: '0.5rem',
     },
     
 
@@ -127,7 +127,7 @@ export default function ModesOfPlay() {
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.expansionDetail}>
 
-                    <Typography variant='body1' className={classes.paragraph} gutterBottom >
+                    <Typography variant='body1' className={classes.paragraph} >
                         Connect Four is a turn-based strategy game for two players.  The board is a grid with 6 rows
                         and 7 columns.  Players take turns adding a chip of their color to a column of their choosing.
                         Chips always ‘fall’ to the lowest empty square in the selected column.  Both players have the
