@@ -17,7 +17,7 @@ import Container from '@material-ui/core/Container';
 import { makeStyles } from '@material-ui/core/styles';
 const useStyles = makeStyles((theme) => ({
     root: {
-        // border: 'solid red 1px',
+        border: 'solid red 1px',
         width: '100%',
         height: '100%',
         display: 'flex',
@@ -28,8 +28,15 @@ const useStyles = makeStyles((theme) => ({
         // overflow: 'scroll',
     },
     paper: {
+        border: 'solid purple 1px',
+        minWidth: '100px',
+        minHeight: '450px',
+
+
         width: '100%',
         height: 'auto',
+        maxHeight: '1280px',
+
         // backgroundColor: theme.palette.primary.light,
         backgroundColor: theme.palette.common.white,
         marginTop: '1.5rem',
@@ -348,7 +355,7 @@ export default function ClassicGame(props) {
                 
                 <Board 
                     boardStatus={currentBoardStatus}
-                    columnHeight= {6}
+                    columnHeight={6}
                     handleColumnClick={handleColumnClick}
                     getColumnStatus={getColumnStatus}
                 />
