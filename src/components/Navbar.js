@@ -30,10 +30,12 @@ import { findAllByPlaceholderText } from '@testing-library/react';
 const useStyles = makeStyles((theme) => ({
     navbar: {
         width: '100vw',
-        backgroundColor: theme.palette.primary.main, // Matches Logo Background
+        backgroundColor: theme.palette.primary.main, 
+        color: theme.palette.primary.contrastText,
         display: 'flex',
         // flexDirection: 'row',
         justifyContent: 'center',
+        // color: theme.palette.common.white,
         // color: '#fff',
     },
     container: {
@@ -48,7 +50,7 @@ const useStyles = makeStyles((theme) => ({
     },
     spacer: {
         // border: 'solid red 1px',
-        width: '5%',
+        width: '6%',
     },
     brandName: {
 
@@ -61,7 +63,7 @@ const useStyles = makeStyles((theme) => ({
         // justifySelf: 'right'
     },
     menuButton: {
-        color: theme.palette.common.white,
+        color: theme.palette.primary.contrastText,
         // marginRight: 0
         // justifySelf: 'end'
     }
